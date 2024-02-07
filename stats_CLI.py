@@ -11,16 +11,19 @@ def cli():
 
 @cli.command(name='total_deposits')
 @click.argument('freq', default=None, required=False)
+@click.option('--latest', required=False)
 @click.option('--json-output/--no-json', default=False, required=False)
-def request_total_deposits(freq, json_output):
+def request_total_deposits(freq, latest, json_output):
     client = APIclient(token)
     no_deposits = client.total_deposits(freq)
     if json_output:
         if freq == None:
-            click.echo(json.dumps({"Total number of deposits": no_deposits}))
+            click.echo(json.dumps({'title': 'Total number of deposits currently', 'stat': no_deposits}))
         else:
-            json_str = json.dumps({"Total deposits " + freq: no_deposits})
-            click.echo(json_str)
+            if latest:
+                click.echo(json.dumps({'title': 'Over the last ' + freq.replace('ly', '') + no_deposits['time'], 'stat': no_deposits['stat']}))
+            else:
+                click.echo(json.dumps({'title': 'Total number of deposits ' + freq, 'stat': no_deposits}))
     else:
         if freq == None:
             click.echo(f"Total number of deposits: {no_deposits}!")

@@ -41,13 +41,13 @@ class APIclient():
             
 
     # function that returns the number of deposits, either over time or total
-    def total_deposits(self, freq):
+    def total_deposits(self, freq, latest):
         if self.records == None:
             self.get_records('current')
 
         # might need to do time sorting for dictionaries returned?
         if freq == None:
-            return self.records['hits']['total']
+            return str(self.records['hits']['total'])
 
         else:
             if freq.lower() == 'monthly':
@@ -57,7 +57,9 @@ class APIclient():
                     y_m_d = remove_time[0].split('-')
                     month_year = y_m_d[0] + '-' + y_m_d[1] 
                     time_dict[month_year] = time_dict.get(month_year, 0) + 1
-                return time_dict
+                
+                if latest:
+                    return {'time': month_year, 'stat': time_dict[month_year]}
             
             elif freq.lower() == 'daily':
                 time_dict = {}
@@ -65,8 +67,10 @@ class APIclient():
                     remove_time = self.deposits[key]['created'].split('T')
                     y_m_d = remove_time[0]
                     time_dict[y_m_d] = time_dict.get(y_m_d, 0) + 1
-                return time_dict
-            
+                
+                if latest:
+                    return {'time': y_m_d, 'stat': time_dict[y_m_d]}
+                
             # weekly: isocalendar() from datetime.time
             elif freq.lower() == 'weekly':
                 time_dict = {}
@@ -78,8 +82,11 @@ class APIclient():
                     week = date_tuple.isocalendar()[1]
                     week_str = 'Week ' + str(week) + ', ' + str(year)
                     time_dict[week_str] = time_dict.get(week_str, 0) + 1
-                return time_dict
-
+                
+                if latest:
+                    return {'time': week_str, 'stat': time_dict[week_str]}
+        
+        return time_dict
         
     
     # function that returns the total num of views of a deposit
