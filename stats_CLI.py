@@ -11,17 +11,20 @@ def cli():
 
 @cli.command(name='total_deposits')
 @click.argument('freq', default=None, required=False)
-@click.option('--latest', required=False)
+@click.option('--latest', is_flag=True, required=False)
 @click.option('--json-output/--no-json', default=False, required=False)
 def request_total_deposits(freq, latest, json_output):
     client = APIclient(token)
-    no_deposits = client.total_deposits(freq)
+    no_deposits = client.total_deposits(freq, latest)
     if json_output:
         if freq == None:
             click.echo(json.dumps({'title': 'Total number of deposits currently', 'stat': no_deposits}))
         else:
             if latest:
-                click.echo(json.dumps({'title': 'Over the last ' + freq.replace('ly', '') + no_deposits['time'], 'stat': no_deposits['stat']}))
+                click.echo(json.dumps({'stat_type': 'Total number of deposits', 
+                                       'title': 'today ' if freq == "daily" else 'this ' + freq.replace('ly', '') \
+                                       + '(' + no_deposits['time'] + ')', 
+                                       'stat': no_deposits['stat']}))
             else:
                 click.echo(json.dumps({'title': 'Total number of deposits ' + freq, 'stat': no_deposits}))
     else:
@@ -88,16 +91,18 @@ def request_num_views(id, version, start_date, end_date, freq, unique, json_outp
 @click.argument('start_date', default=None, required=False)
 @click.argument('end_date', default=None, required=False)
 @click.argument('freq', default=None, required=False)
+@click.option('--latest', is_flag=True, required=False)
 @click.option('--unique/--not-unique', default=False)
 @click.option('--json-output/--no-json', default=False, required=False)
-def request_avg_views(version, start_date, end_date, freq, unique, json_output):
+def request_avg_views(version, start_date, end_date, freq, latest, unique, json_output):
     client = APIclient(token)
-    avg = client.avg_views(version, start_date, end_date, freq, unique)
+    avg = client.avg_views(version, start_date, end_date, freq, latest, unique)
     if freq is None:
         if json_output:
-            click.echo(json.dumps({"Average number of " + ("unique " if unique else "") + "views per deposit, taken from " 
-                                + ("current version" if version == "current" else "all versions")
-                                + (" over " + start_date + " to " + end_date if start_date != None and end_date != None else ""): avg}))
+            # click.echo(json.dumps({"Average number of " + ("unique " if unique else "") + "views per deposit, taken from " 
+                                # + ("current versions" if version == "current" else "all versions")
+                                # + (" over " + start_date + " to " + end_date if start_date != None and end_date != None else ""): avg}))
+            click.echo(json.dumps({'title': avg['title'], 'stat': avg['stat']}))
         else:
             click.echo("Average number of " + ("unique " if unique else "") + "views per deposit, taken from "
                     + ("current versions" if version == "current" else "all versions") 
@@ -114,6 +119,14 @@ def request_avg_views(version, start_date, end_date, freq, unique, json_output):
                         + start_date + " to " + end_date + ":")
             for key in avg:
                 click.echo(str(key) + ": " + str(avg[key]))
+    
+    elif freq != None and latest:
+        if json_output:
+            click.echo(json.dumps({'stat_type': 'Average views per deposit', 
+                                       'title': 'today ' if freq == 'daily' else 'this ' + freq.replace('ly', '') \
+                                       + '(' + avg['time'] + ')', 
+                                       'stat': avg['stat']}))
+            
 
 
 @cli.command(name='num_downloads')
@@ -122,11 +135,12 @@ def request_avg_views(version, start_date, end_date, freq, unique, json_output):
 @click.argument('start_date', default=None, required=False)
 @click.argument('end_date', default=None, required=False)
 @click.argument('freq', default=None, required=False)          # options: monthly, weekly, daily
+@click.option('--latest', default=None, required=False)
 @click.option('--unique/--not-unique', default=False, required=False)
 @click.option('--json-output/--no-json', default=False, required=False)
-def request_num_downloads(id, version, start_date, end_date, freq, unique, json_output):
+def request_num_downloads(id, version, start_date, end_date, freq, latest, unique, json_output):
     client = APIclient(token)
-    no_downloads = client.total_downloads(id, version, start_date, end_date, freq, unique)
+    no_downloads = client.total_downloads(id, version, start_date, end_date, freq, latest, unique)
     if id.lower() == 'all':
         if json_output:
             click.echo(json.dumps({"Total number of " + ("unique" if unique else "") + " downloads by deposit " 
@@ -170,16 +184,18 @@ def request_num_downloads(id, version, start_date, end_date, freq, unique, json_
 @click.argument('start_date', default=None, required=False)
 @click.argument('end_date', default=None, required=False)
 @click.argument('freq', default=None, required=False)
+@click.option('--latest', is_flag=True, required=False)
 @click.option('--unique/--not-unique', default=False)
 @click.option('--json-output/--no-json', default=False, required=False)
-def request_avg_downloads(version, start_date, end_date, freq, unique, json_output):
+def request_avg_downloads(version, start_date, end_date, freq, latest, unique, json_output):
     client = APIclient(token)
-    avg = client.avg_downloads(version, start_date, end_date, freq, unique)
+    avg = client.avg_downloads(version, start_date, end_date, freq, latest, unique)
     if freq is None:
         if json_output:
-            click.echo(json.dumps({"Average number of " + ("unique " if unique else "") + "downloads per deposit, taken from " 
-                                + ("current version" if version == "current" else "all versions")
-                                + (" over " + start_date + " to " + end_date if start_date != None and end_date != None else ""): avg}))
+            # click.echo(json.dumps({"Average number of " + ("unique " if unique else "") + "downloads per deposit, taken from " 
+                                # + ("current version" if version == "current" else "all versions")
+                                # + (" over " + start_date + " to " + end_date if start_date != None and end_date != None else ""): avg}))
+            click.echo(json.dumps({'title': avg['title'], 'stat': avg['stat']}))
         else:
             click.echo("Average number of " + ("unique " if unique else "") + "downloads per deposit, taken from "
                     + ("current versions" if version == "current" else "all versions") 
@@ -196,6 +212,13 @@ def request_avg_downloads(version, start_date, end_date, freq, unique, json_outp
                         + start_date + " to " + end_date + ":")
             for key in avg:
                 click.echo(str(key) + ": " + str(avg[key]))
+
+    elif freq != None and latest:
+        if json_output:
+            click.echo(json.dumps({'stat_type': 'Average downloads per deposit', 
+                                       'title': 'today ' if freq == 'daily' else 'this ' + freq.replace('ly', '') \
+                                       + '(' + avg['time'] + ')', 
+                                       'stat': avg['stat']}))
 
 
 @cli.command(name='top_downloads')

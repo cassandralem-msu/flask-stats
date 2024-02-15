@@ -9,36 +9,46 @@ bp = Blueprint('stats', __name__, url_prefix='/')
 
 @bp.route('/')
 def stats():
-    sections = {}
+    sections = []
     stat_types = ['total_deposits', 'avg_views', 'avg_downloads']
     freqs = ['monthly', 'weekly', 'daily']
 
-
-    # send command line request to get total no. of deposits
-    get_no_deposits = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", "total_deposits", "--json-output"], 
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        universal_newlines=True,)
-    stdout_gnd, stderr_gnd = get_no_deposits.communicate()
-
-    # print(get_no_deposits.returncode)
-
-    # pprint(stdout_gnd)
-    # pprint(stderr_gnd)
-
-    dict_response = json.loads(stdout_gnd)
-
-    for key in dict_response:
-        sections[key] = dict_response[key]
-
-    for freq in freqs:
-        get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", "total_deposits", freq, "--json-output"], 
+    for stat_type in stat_types:
+        section = {}
+        table_headings = []
+        table_entries = []
+        # send command line request to get total no. of deposits
+        get_stat = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", stat_type, "--json-output"], 
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
                                             universal_newlines=True,)
-        stdout_gndt, stderr_gndt = get_no_deposits_time.communicate()
-        dict_response = json.loads(stdout_gndt)
-        for key in dict_response:
-            deposit_stats[key] = dict_response[key]
+        stdout_stat, stderr_stat = get_stat.communicate()
 
-    return render_template('base.html', headings=headings, deposit_stats=deposit_stats)
+        # print(get_stat.returncode)
+
+        # pprint(stdout_stat)
+        # pprint(stderr_stat)
+
+        dict_response = json.loads(stdout_stat)
+
+        section['main_heading'] = dict_response['title']
+        section['main_stat'] = dict_response['stat']
+        section['table_name'] = section['main_heading'].replace('currently', '')
+
+        for freq in freqs:
+            get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", stat_type, freq, "--latest", "--json-output"], 
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE,
+                                                universal_newlines=True,)
+            stdout_table, stderr_table = get_no_deposits_time.communicate()
+            # pprint(stdout_table)
+            dict_response = json.loads(stdout_table)
+            table_headings.append(dict_response['title'])
+            table_entries.append(dict_response['stat'])
+        
+        section['table_headings'] = table_headings
+        section['table_entries'] = table_entries
+
+        sections.append(section)
+
+    return render_template('base.html', sections=sections)

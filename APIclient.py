@@ -47,7 +47,7 @@ class APIclient():
 
         # might need to do time sorting for dictionaries returned?
         if freq == None:
-            return str(self.records['hits']['total'])
+            return self.records['hits']['total']
 
         else:
             if freq.lower() == 'monthly':
@@ -272,7 +272,7 @@ class APIclient():
 
 
     # function that returns the average num of views across all deposits (can handle over time)
-    def avg_views(self, version, start_date, end_date, freq, unique):
+    def avg_views(self, version, start_date, end_date, freq, latest, unique):
         if self.records == None:
             self.get_records(version)
         
@@ -287,13 +287,13 @@ class APIclient():
                 elif version.lower() == "current" and unique == False:
                     no_views = self.deposits[key]['stats']['this_version']['views']
                     total_views += no_views
-                elif version.lower() == "all" & unique == True:
+                elif version.lower() == "all" and unique == True:
                     no_views = self.deposits[key]['stats']['all_versions']['unique_views']
                     total_views += no_views
                 else:
                     no_views = self.deposits[key]['stats']['all_versions']['views']
                     total_views += no_views
-            return total_views / total_deposits
+            return {'title': 'Average no. of views per deposit currently', 'stat': total_views / total_deposits}
         
         elif freq == None and start_date != None and end_date != None:
             total_views = 0
@@ -312,7 +312,7 @@ class APIclient():
                     response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
                     no_views = response['stats']['this_version']['views']
                     total_views += no_views
-                elif version.lower() == "all" & unique == True:
+                elif version.lower() == "all" and unique == True:
                     self.payload = json.dumps({"views": {"stat": "record-view-all-versions", "params": {"start_date": start_date, 
                                                                                             "end_date": end_date, 
                                                                                             "parent_recid": id}}})
@@ -431,6 +431,34 @@ class APIclient():
                     avg_views[date_key] = num_views / total_deposits
                     date_holder = last_mo_day + datetime.timedelta(days=1)
 
+        elif freq.lower() == "monthly" and latest:
+            current_date = datetime.now()
+            first_date = datetime.date(current_date.year, current_date.month, '01')
+
+            num_views = 0
+            for id in self.deposits:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"views": {"stat": "record-view", 
+                                                        "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                                    "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "recid": id}}})
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"views": {"stat": "record-view-all-versions", 
+                                                "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                            "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "parent_recid": id}}})
+                response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                if unique:
+                    num_views += response["views"]["unique_views"]
+                else:
+                    num_views += response["views"]["views"]
+            
+            avg_views_latest_mo = num_views / total_deposits
+            month_str = current_date.month + '-' + current_date.year
+
+            return {'time': month_str, 'stat': avg_views_latest_mo}
+        
         elif freq.lower() == "weekly" and start_date != None and end_date != None:
             avg_views = {}
             start_y_m_d = start_date.split("-")
@@ -481,6 +509,35 @@ class APIclient():
             
             return avg_views
         
+        elif freq.lower() == "weekly" and latest:
+            current_date = datetime.now()
+            first_date = current_date - datetime.timedelta(days=current_date.weekday()+1)
+
+            num_views = 0
+            for id in self.deposits:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"views": {"stat": "record-view", 
+                                                        "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                                    "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "recid": id}}})
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"views": {"stat": "record-view-all-versions", 
+                                                "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                            "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "parent_recid": id}}})
+                response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                if unique:
+                    num_views += response["views"]["unique_views"]
+                else:
+                    num_views += response["views"]["views"]
+            
+            avg_views_latest_week = num_views / total_deposits
+            week_str = first_date.strftime('%Y-%m-%d') + ' - ' + current_date.strftime('%Y-%m-%d')
+
+            return {'time': week_str, 'stat': avg_views_latest_week}
+
+        
         elif freq.lower() == "daily" and start_date != None and end_date != None:
             avg_views = {}
             start_y_m_d = start_date.split("-")
@@ -518,6 +575,33 @@ class APIclient():
                 start_datetime += delta
 
             return avg_views
+
+        elif freq.lower() == "daily" and latest:
+            current_date = datetime.now()
+
+            num_views = 0
+            for id in self.deposits:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"views": {"stat": "record-view", 
+                                                        "params": {"start_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "recid": id}}})
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"views": {"stat": "record-view-all-versions", 
+                                                "params": {"start_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "parent_recid": id}}})
+                response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                if unique:
+                    num_views += response["views"]["unique_views"]
+                else:
+                    num_views += response["views"]["views"]
+            
+            avg_views_today = num_views / total_deposits
+            today_str = current_date.strftime('%Y-%m-%d')
+
+            return {'time': today_str, 'stat': avg_views_today}
 
     
     # function that returns the total num of downloads of a deposit
@@ -688,7 +772,7 @@ class APIclient():
         
 
     # function that returns the average num of downloads across all deposits (can handle over time)
-    def avg_downloads(self, version, start_date, end_date, freq, unique):
+    def avg_downloads(self, version, start_date, end_date, freq, latest, unique):
         if self.records == None:
             self.get_records(version)
         
@@ -701,11 +785,11 @@ class APIclient():
                     total_downloads += self.deposits[key]['stats']['this_version']['unique_downloads']
                 elif version.lower() == "current" and unique == False:
                     total_downloads += self.deposits[key]['stats']['this_version']['downloads']
-                elif version.lower() == "all" & unique == True:
+                elif version.lower() == "all" and unique == True:
                     total_downloads += self.deposits[key]['stats']['all_versions']['unique_downloads']
                 else:
                     total_downloads += self.deposits[key]['stats']['all_versions']['downloads']
-            return total_downloads / total_deposits
+            return {'title': 'Average no. of downloads per deposit currently', 'stat': total_downloads / total_deposits}
         
         elif freq == None and start_date != None and end_date != None:
             total_downloads = 0
@@ -722,7 +806,7 @@ class APIclient():
                                                                                             "recid": id}}})
                     response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
                     total_downloads += response['stats']['this_version']['downloads']
-                elif version.lower() == "all" & unique == True:
+                elif version.lower() == "all" and unique == True:
                     self.payload = json.dumps({"downloads": {"stat": "record-download-all-versions", "params": {"start_date": start_date, 
                                                                                             "end_date": end_date, 
                                                                                             "parent_recid": id}}})
@@ -839,6 +923,34 @@ class APIclient():
                     avg_downloads[date_key] = num_downloads / total_deposits
                     date_holder = last_mo_day + datetime.timedelta(days=1)
 
+        elif freq.lower() == "monthly" and latest:
+            current_date = datetime.now()
+            first_date = datetime.date(current_date.year, current_date.month, '01')
+
+            num_views = 0
+            for id in self.deposits:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"views": {"stat": "record-download", 
+                                                        "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                                    "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "recid": id}}})
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
+                                                "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                            "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "parent_recid": id}}})
+                response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                if unique:
+                    num_downloads += response["downloads"]["unique_downloads"]
+                else:
+                    num_downloads += response["downloads"]["downloads"]
+            
+            avg_downloads_latest_mo = num_downloads / total_deposits
+            month_str = current_date.month + '-' + current_date.year
+
+            return {'time': month_str, 'stat': avg_downloads_latest_mo}
+        
         elif freq.lower() == "weekly" and start_date != None and end_date != None:
             avg_downloads = {}
             start_y_m_d = start_date.split("-")
@@ -889,6 +1001,34 @@ class APIclient():
             
             return avg_downloads
         
+        elif freq.lower() == "weekly" and latest:
+            current_date = datetime.now()
+            first_date = current_date - datetime.timedelta(days=current_date.weekday()+1)
+
+            num_downloads = 0
+            for id in self.deposits:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"views": {"stat": "record-download", 
+                                                        "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                                    "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "recid": id}}})
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
+                                                "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                            "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "parent_recid": id}}})
+                response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                if unique:
+                    num_views += response["downloads"]["unique_downloads"]
+                else:
+                    num_views += response["downloads"]["downloads"]
+            
+            avg_downloads_latest_week = num_downloads / total_deposits
+            week_str = first_date.strftime('%Y-%m-%d') + ' - ' + current_date.strftime('%Y-%m-%d')
+
+            return {'time': week_str, 'stat': avg_downloads_latest_week}
+        
         elif freq.lower() == "daily" and start_date != None and end_date != None:
             avg_downloads = {}
             start_y_m_d = start_date.split("-")
@@ -926,6 +1066,33 @@ class APIclient():
                 start_datetime += delta
 
             return avg_downloads
+
+        elif freq.lower() == "daily" and latest:
+            current_date = datetime.now()
+
+            num_downloads = 0
+            for id in self.deposits:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"views": {"stat": "record-download", 
+                                                        "params": {"start_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                                    "recid": id}}})
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
+                                                "params": {"start_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "end_date": current_date.strftime('%Y-%m-%d'), 
+                                                            "parent_recid": id}}})
+                response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                if unique:
+                    num_downloads += response["downloads"]["unique_downloads"]
+                else:
+                    num_downloads += response["downloads"]["downloads"]
+            
+            avg_downloads_today = num_downloads / total_deposits
+            today_str = current_date.strftime('%Y-%m-%d')
+
+            return {'time': today_str, 'stat': avg_downloads_today}
         
 
     # return a dictionary of deposits and number of downloads, sorted

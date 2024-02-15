@@ -8,24 +8,22 @@
 
   <h1>Invenio statistics dashboard</h1>
   
-  {% for heading in headings %}
-    <h3> {{ heading }}:</h3>
-    {{ deposit_stats[0] }}
+  {% for section in sections %}
+    <h3> {{ section['main_heading'] }}:</h3>
+    {{ section['main_stat'] }}
 
     <table border="1">
       <tr>
           <th></th>
-          <!-- <th>in the last year</th> -->
-          <th>in the last month</th>
-          <th>in the last week</th>
-          <th>in the last day</th>
+          {% for table_heading in section['table_headings'] %}
+            <th> {{ table_heading }} </th>
+          {% endfor %}
       </tr>
       <tr>
-          <td>Total no. of deposits added</td>
-          <!-- <td>Row 1, Column 2</td> -->
-          <td>{{ deposit_stats[1] }}</td>
-          <td>{{ deposit_stats[2] }}</td>
-          <td>{{ deposit_stats[3] }}</td>
+          <td> {{ section['table_name'] }} </td>
+          {% for table_stat in section['table_entries'] %}
+            <th> {{ table_stat }} </th>
+          {% endfor %}
       </tr>
       <!-- Add more rows as needed -->
     </table>
