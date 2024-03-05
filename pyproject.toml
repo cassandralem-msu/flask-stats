@@ -2,7 +2,7 @@
 name = "flask-stats"
 version = "1.0.0"
 description = "A Flask web app that serves as an Invenio statistics dashboard for Humanities Commons."
-readme = "README.rst"
+readme = "README.md"
 license = {text = "BSD-3-Clause"}
 maintainers = [{name = "Cassie Lem", email = "lemcassa@msu.edu"}]
 dependencies = [
