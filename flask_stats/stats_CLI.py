@@ -1,6 +1,6 @@
 import click
 import json
-from APIclient import APIclient
+from flask_stats.APIclient import APIclient
 import os
 
 token = os.environ['CLI_TOKEN']
@@ -23,7 +23,7 @@ def request_total_deposits(freq, latest, json_output):
             if latest:
                 click.echo(json.dumps({'stat_type': 'Total number of deposits', 
                                        'title': 'today ' if freq == "daily" else 'this ' + freq.replace('ly', '') \
-                                       + '(' + no_deposits['time'] + ')', 
+                                       + ' (' + no_deposits['time'] + ')', 
                                        'stat': no_deposits['stat']}))
             else:
                 click.echo(json.dumps({'title': 'Total number of deposits ' + freq, 'stat': no_deposits}))
@@ -87,16 +87,16 @@ def request_num_views(id, version, start_date, end_date, freq, unique, json_outp
 
 
 @cli.command(name='avg_views')
-@click.argument('version', default='current')
+@click.argument('version', default='all', required=False)
+@click.argument('freq', default=None, required=False)
 @click.argument('start_date', default=None, required=False)
 @click.argument('end_date', default=None, required=False)
-@click.argument('freq', default=None, required=False)
 @click.option('--latest', is_flag=True, required=False)
 @click.option('--unique/--not-unique', default=False)
 @click.option('--json-output/--no-json', default=False, required=False)
-def request_avg_views(version, start_date, end_date, freq, latest, unique, json_output):
+def request_avg_views(version, freq, start_date, end_date, latest, unique, json_output):
     client = APIclient(token)
-    avg = client.avg_views(version, start_date, end_date, freq, latest, unique)
+    avg = client.avg_views(version, freq, start_date, end_date, latest, unique)
     if freq is None:
         if json_output:
             # click.echo(json.dumps({"Average number of " + ("unique " if unique else "") + "views per deposit, taken from " 
@@ -124,7 +124,7 @@ def request_avg_views(version, start_date, end_date, freq, latest, unique, json_
         if json_output:
             click.echo(json.dumps({'stat_type': 'Average views per deposit', 
                                        'title': 'today ' if freq == 'daily' else 'this ' + freq.replace('ly', '') \
-                                       + '(' + avg['time'] + ')', 
+                                       + ' (' + avg['time'] + ')', 
                                        'stat': avg['stat']}))
             
 
@@ -180,16 +180,16 @@ def request_num_downloads(id, version, start_date, end_date, freq, latest, uniqu
 
 
 @cli.command(name='avg_downloads')
-@click.argument('version', default='current')
+@click.argument('version', default='all', required=False)
+@click.argument('freq', default=None, required=False)
 @click.argument('start_date', default=None, required=False)
 @click.argument('end_date', default=None, required=False)
-@click.argument('freq', default=None, required=False)
 @click.option('--latest', is_flag=True, required=False)
 @click.option('--unique/--not-unique', default=False)
 @click.option('--json-output/--no-json', default=False, required=False)
-def request_avg_downloads(version, start_date, end_date, freq, latest, unique, json_output):
+def request_avg_downloads(version, freq, start_date, end_date, latest, unique, json_output):
     client = APIclient(token)
-    avg = client.avg_downloads(version, start_date, end_date, freq, latest, unique)
+    avg = client.avg_downloads(version, freq, start_date, end_date, latest, unique)
     if freq is None:
         if json_output:
             # click.echo(json.dumps({"Average number of " + ("unique " if unique else "") + "downloads per deposit, taken from " 
@@ -217,7 +217,7 @@ def request_avg_downloads(version, start_date, end_date, freq, latest, unique, j
         if json_output:
             click.echo(json.dumps({'stat_type': 'Average downloads per deposit', 
                                        'title': 'today ' if freq == 'daily' else 'this ' + freq.replace('ly', '') \
-                                       + '(' + avg['time'] + ')', 
+                                       + ' (' + avg['time'] + ')', 
                                        'stat': avg['stat']}))
 
 

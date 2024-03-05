@@ -1,0 +1,12 @@
+README.rst
+pyproject.toml
+flask_stats/APIclient.py
+flask_stats/__init__.py
+flask_stats/stats.py
+flask_stats/stats_CLI.py
+flask_stats.egg-info/PKG-INFO
+flask_stats.egg-info/SOURCES.txt
+flask_stats.egg-info/dependency_links.txt
+flask_stats.egg-info/requires.txt
+flask_stats.egg-info/top_level.txt
+tests/test_stats.py

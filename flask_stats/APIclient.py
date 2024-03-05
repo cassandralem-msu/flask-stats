@@ -3,7 +3,7 @@ import numpy as np
 import json
 import calendar
 import datetime
-from datetime import date
+#from datetime import datetime
 
 # create class for managing stats queried from Invenio API response
 
@@ -19,9 +19,7 @@ class APIclient():
                         }
         self.payload = None
         self.records = None
-        # self.stats = None
         self.deposits = {}
-        # self.depositIDs = {}
         self.records_url = 'https://invenio-dev.hcommons-staging.org/api/records'
         self.stats_url = 'https://invenio-dev.hcommons-staging.org/api/stats'
 
@@ -30,7 +28,7 @@ class APIclient():
     # also creates dictionary mapping deposit ID to dictionary of deposit info (from records endpoint)
     def get_records(self, version):
         # .json() turns the JSON string into a python dictionary
-        self.records = requests.get(self.records_url, headers=self.headers, verify=False).json()
+        self.records = requests.get(self.records_url, headers=self.headers).json()
         # create the dictionary
         for item in self.records['hits']['hits']:
             if version == 'current':
@@ -55,7 +53,7 @@ class APIclient():
                 for key in self.deposits:
                     remove_time = self.deposits[key]['created'].split('T')
                     y_m_d = remove_time[0].split('-')
-                    month_year = y_m_d[0] + '-' + y_m_d[1] 
+                    month_year = y_m_d[1] + '-' + y_m_d[0] 
                     time_dict[month_year] = time_dict.get(month_year, 0) + 1
                 
                 if latest:
@@ -272,7 +270,7 @@ class APIclient():
 
 
     # function that returns the average num of views across all deposits (can handle over time)
-    def avg_views(self, version, start_date, end_date, freq, latest, unique):
+    def avg_views(self, version, freq, start_date, end_date, latest, unique):
         if self.records == None:
             self.get_records(version)
         
@@ -433,19 +431,19 @@ class APIclient():
 
         elif freq.lower() == "monthly" and latest:
             current_date = datetime.now()
-            first_date = datetime.date(current_date.year, current_date.month, '01')
+            first_date = f'{current_date.year}-{current_date.month}-01'
 
             num_views = 0
             for id in self.deposits:
                 if version.lower() == "current":
                     self.payload = json.dumps({"views": {"stat": "record-view", 
-                                                        "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                        "params": {"start_date": first_date, 
                                                                     "end_date": current_date.strftime('%Y-%m-%d'), 
                                                                     "recid": id}}})
                 else:
                     # id needs to be the parent_recid
                     self.payload = json.dumps({"views": {"stat": "record-view-all-versions", 
-                                                "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                "params": {"start_date": first_date, 
                                                             "end_date": current_date.strftime('%Y-%m-%d'), 
                                                             "parent_recid": id}}})
                 response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
@@ -455,7 +453,7 @@ class APIclient():
                     num_views += response["views"]["views"]
             
             avg_views_latest_mo = num_views / total_deposits
-            month_str = current_date.month + '-' + current_date.year
+            month_str = f'{current_date.month}-{current_date.year}'
 
             return {'time': month_str, 'stat': avg_views_latest_mo}
         
@@ -772,7 +770,7 @@ class APIclient():
         
 
     # function that returns the average num of downloads across all deposits (can handle over time)
-    def avg_downloads(self, version, start_date, end_date, freq, latest, unique):
+    def avg_downloads(self, version, freq, start_date, end_date, latest, unique):
         if self.records == None:
             self.get_records(version)
         
@@ -925,19 +923,19 @@ class APIclient():
 
         elif freq.lower() == "monthly" and latest:
             current_date = datetime.now()
-            first_date = datetime.date(current_date.year, current_date.month, '01')
+            first_date = f'{current_date.year}-{current_date.month}-01'
 
             num_views = 0
             for id in self.deposits:
                 if version.lower() == "current":
                     self.payload = json.dumps({"views": {"stat": "record-download", 
-                                                        "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                        "params": {"start_date": first_date, 
                                                                     "end_date": current_date.strftime('%Y-%m-%d'), 
                                                                     "recid": id}}})
                 else:
                     # id needs to be the parent_recid
                     self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
-                                                "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
+                                                "params": {"start_date": first_date, 
                                                             "end_date": current_date.strftime('%Y-%m-%d'), 
                                                             "parent_recid": id}}})
                 response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
@@ -947,7 +945,7 @@ class APIclient():
                     num_downloads += response["downloads"]["downloads"]
             
             avg_downloads_latest_mo = num_downloads / total_deposits
-            month_str = current_date.month + '-' + current_date.year
+            month_str = f'{current_date.month}-{current_date.year}'
 
             return {'time': month_str, 'stat': avg_downloads_latest_mo}
         

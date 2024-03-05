@@ -1,7 +1,7 @@
 [project]
-name = "flaskr-stats"
+name = "flask-stats"
 version = "1.0.0"
-description = "The basic blog app built in the Flask tutorial."
+description = "A Flask web app that serves as an Invenio statistics dashboard for Humanities Commons."
 readme = "README.rst"
 license = {text = "BSD-3-Clause"}
 maintainers = [{name = "Cassie Lem", email = "lemcassa@msu.edu"}]
@@ -16,16 +16,8 @@ Documentation = "https://flask.palletsprojects.com/tutorial/"
 test = ["pytest"]
 
 [build-system]
-requires = ["flit_core<4"]
-build-backend = "flit_core.buildapi"
-
-[tool.flit.module]
-name = "flaskr-stats"
-
-[tool.flit.sdist]
-include = [
-    "tests/",
-]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -33,7 +25,7 @@ filterwarnings = ["error"]
 
 [tool.coverage.run]
 branch = true
-source = ["flaskr", "tests"]
+source = ["flask_stats", "tests"]
 
 [tool.ruff]
 src = ["src"]

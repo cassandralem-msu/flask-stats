@@ -4,6 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+build = "*"
+setuptools = "*"
+flask-stats = {file = ".", editable = true}
 
 [dev-packages]
 
