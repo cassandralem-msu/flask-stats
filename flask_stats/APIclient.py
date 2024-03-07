@@ -2,8 +2,8 @@ import requests
 import numpy as np
 import json
 import calendar
-import datetime
-#from datetime import datetime
+import datetime as dt
+from datetime import datetime
 
 # create class for managing stats queried from Invenio API response
 
@@ -75,7 +75,7 @@ class APIclient():
                 for key in self.deposits:
                     remove_time = self.deposits[key]['created'].split('T')
                     y_m_d = remove_time[0].split('-')
-                    date_tuple = datetime.date(int(y_m_d[0]), int(y_m_d[1]), int(y_m_d[2]))
+                    date_tuple = dt.date(int(y_m_d[0]), int(y_m_d[1]), int(y_m_d[2]))
                     year = date_tuple.isocalendar()[0]
                     week = date_tuple.isocalendar()[1]
                     week_str = 'Week ' + str(week) + ', ' + str(year)
@@ -127,8 +127,8 @@ class APIclient():
                 end_year = int(end_y_m_d[0])
                 end_month = int(end_y_m_d[1].lstrip('0'))
                 end_day = int(end_y_m_d[2])
-                start_datetime = datetime.date(start_year, start_month, start_day)
-                end_datetime = datetime.date(end_year, end_month, end_day)
+                start_datetime = dt.date(start_year, start_month, start_day)
+                end_datetime = dt.date(end_year, end_month, end_day)
 
                 if freq.lower() == "monthly":
                     month_num = start_datetime.month
@@ -137,7 +137,7 @@ class APIclient():
                     else:
                         month_str = str(month_num)
                     num_days = calendar.monthrange(start_year, month_num)[1]
-                    last_mo_day = datetime.date(start_year, month_num, num_days)
+                    last_mo_day = dt.date(start_year, month_num, num_days)
                     if version.lower() == "current":
                         self.payload = json.dumps({"views": {"stat": "record-view", 
                                                             "params": {"start_date": start_date, 
@@ -155,7 +155,7 @@ class APIclient():
                         views_over_time[date_key] = response["views"]["unique_views"]
                     else:
                         views_over_time[date_key] = response["views"]["views"]
-                    date_holder = last_mo_day + datetime.timedelta(days=1)
+                    date_holder = last_mo_day + dt.timedelta(days=1)
 
                     while date_holder <= end_datetime:
                         month_num = date_holder.month
@@ -187,7 +187,7 @@ class APIclient():
 
                         else:        
                             num_days = calendar.monthrange(year_num, month_num)[1]
-                            last_mo_day = datetime.date(year_num, month_num, num_days)
+                            last_mo_day = dt.date(year_num, month_num, num_days)
                             if version.lower() == "current":
                                 self.payload = json.dumps({"views": {"stat": "record-view", 
                                                                      "params": {"start_date": date_holder.strftime('%Y-%m-%d'), 
@@ -205,17 +205,17 @@ class APIclient():
                                 views_over_time[date_key] = response["views"]["unique_views"]
                             else:
                                 views_over_time[date_key] = response["views"]["views"]
-                        date_holder = last_mo_day + datetime.timedelta(days=1)
+                        date_holder = last_mo_day + dt.timedelta(days=1)
                 
                 elif freq.lower() == "weekly":
                     day_of_week = start_datetime.weekday()
                     if day_of_week == 6:
-                        init_delta = datetime.timedelta(days=6)
+                        init_delta = dt.timedelta(days=6)
                     else:
-                        init_delta = datetime.timedelta(days=5-day_of_week)
+                        init_delta = dt.timedelta(days=5-day_of_week)
                     start_week = start_datetime
                     end_week = start_datetime + init_delta
-                    delta = datetime.timedelta(days=6)
+                    delta = dt.timedelta(days=6)
 
                     while (start_week <= end_datetime):
 
@@ -240,13 +240,13 @@ class APIclient():
                         else:
                             views_over_time[date_key] = response["views"]["views"]
                         
-                        start_week = end_week + datetime.timedelta(days=1)
+                        start_week = end_week + dt.timedelta(days=1)
                         end_week = start_week + delta
                     
                     return views_over_time
                 
                 else:
-                    delta = datetime.timedelta(days=1)
+                    delta = dt.timedelta(days=1)
                     
                     while (start_datetime <= end_datetime):
                         if version.lower() == "current":
@@ -337,8 +337,8 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
 
             month_num = start_datetime.month
             if month_num < 10:
@@ -346,7 +346,7 @@ class APIclient():
             else:
                 month_str = str(month_num)
             num_days = calendar.monthrange(start_year, month_num)[1]
-            last_mo_day = datetime.date(start_year, month_num, num_days)
+            last_mo_day = dt.date(start_year, month_num, num_days)
 
             num_views = 0
             for id in self.deposits:
@@ -370,7 +370,7 @@ class APIclient():
             date_key = month_str + "-" + str(start_year)
             avg_views[date_key] = num_views / total_deposits
 
-            date_holder = last_mo_day + datetime.timedelta(days=1)
+            date_holder = last_mo_day + dt.timedelta(days=1)
 
             while date_holder <= end_datetime:
                 num_views = 0
@@ -406,7 +406,7 @@ class APIclient():
 
                 else:        
                     num_days = calendar.monthrange(year_num, month_num)[1]
-                    last_mo_day = datetime.date(year_num, month_num, num_days)
+                    last_mo_day = dt.date(year_num, month_num, num_days)
                     for id in self.deposits:
                         if version.lower() == "current":
                             self.payload = json.dumps({"views": {"stat": "record-view", 
@@ -427,7 +427,7 @@ class APIclient():
                 
                     date_key = month_str + "-" + str(start_year)
                     avg_views[date_key] = num_views / total_deposits
-                    date_holder = last_mo_day + datetime.timedelta(days=1)
+                    date_holder = last_mo_day + dt.timedelta(days=1)
 
         elif freq.lower() == "monthly" and latest:
             current_date = datetime.now()
@@ -467,16 +467,16 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
             day_of_week = start_datetime.weekday()
             if day_of_week == 6:
-                init_delta = datetime.timedelta(days=6)
+                init_delta = dt.timedelta(days=6)
             else:
-                init_delta = datetime.timedelta(days=5-day_of_week)
+                init_delta = dt.timedelta(days=5-day_of_week)
             start_week = start_datetime
             end_week = start_datetime + init_delta
-            delta = datetime.timedelta(days=6)
+            delta = dt.timedelta(days=6)
 
             while (start_week <= end_datetime):
                 num_views = 0
@@ -502,14 +502,14 @@ class APIclient():
                 date_key = "Week of " + start_week.strftime("%Y-%m-%d") + " - " + \
                             (end_datetime.strftime("%Y-%m-%d") if end_week > end_datetime else end_week.strftime("%Y-%m-%d"))
                 avg_views[date_key] = num_views / total_deposits
-                start_week = end_week + datetime.timedelta(days=1)
+                start_week = end_week + dt.timedelta(days=1)
                 end_week = start_week + delta
             
             return avg_views
         
         elif freq.lower() == "weekly" and latest:
             current_date = datetime.now()
-            first_date = current_date - datetime.timedelta(days=current_date.weekday()+1)
+            first_date = current_date - dt.timedelta(days=current_date.weekday()+1)
 
             num_views = 0
             for id in self.deposits:
@@ -546,9 +546,9 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
-            delta = datetime.timedelta(days=1)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
+            delta = dt.timedelta(days=1)
                     
             while (start_datetime <= end_datetime):
                 num_views = 0
@@ -627,8 +627,8 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
 
             if freq.lower() == "monthly":
                 month_num = start_datetime.month
@@ -637,7 +637,7 @@ class APIclient():
                 else:
                     month_str = str(month_num)
                 num_days = calendar.monthrange(start_year, month_num)[1]
-                last_mo_day = datetime.date(start_year, month_num, num_days)
+                last_mo_day = dt.date(start_year, month_num, num_days)
                 if version.lower() == "current":
                             self.payload = json.dumps({"downloads": {"stat": "record-download", 
                                                         "params": {"start_date": start_date, 
@@ -655,7 +655,7 @@ class APIclient():
                     downloads_over_time[date_key] = response["downloads"]["unique_downloads"]
                 else:
                     downloads_over_time[date_key] = response["downloads"]["downloads"]
-                date_holder = last_mo_day + datetime.timedelta(days=1)
+                date_holder = last_mo_day + dt.timedelta(days=1)
 
                 while date_holder <= end_datetime:
                     month_num = date_holder.month
@@ -687,7 +687,7 @@ class APIclient():
 
                     else:        
                         num_days = calendar.monthrange(year_num, month_num)[1]
-                        last_mo_day = datetime.date(year_num, month_num, num_days)
+                        last_mo_day = dt.date(year_num, month_num, num_days)
                         if version.lower() == "current":
                             self.payload = json.dumps({"downloads": {"stat": "record-download", 
                                                                     "params": {"start_date": date_holder.strftime('%Y-%m-%d'), 
@@ -705,17 +705,17 @@ class APIclient():
                             downloads_over_time[date_key] = response["downloads"]["unique_downloads"]
                         else:
                             downloads_over_time[date_key] = response["downloads"]["downloads"]
-                    date_holder = last_mo_day + datetime.timedelta(days=1)
+                    date_holder = last_mo_day + dt.timedelta(days=1)
             
             elif freq.lower() == "weekly":
                 day_of_week = start_datetime.weekday()
                 if day_of_week == 6:
-                    init_delta = datetime.timedelta(days=6)
+                    init_delta = dt.timedelta(days=6)
                 else:
-                    init_delta = datetime.timedelta(days=5-day_of_week)
+                    init_delta = dt.timedelta(days=5-day_of_week)
                 start_week = start_datetime
                 end_week = start_datetime + init_delta
-                delta = datetime.timedelta(days=6)
+                delta = dt.timedelta(days=6)
 
                 while (start_week <= end_datetime):
                     
@@ -740,13 +740,13 @@ class APIclient():
                     else:
                         downloads_over_time[date_key] = response["downloads"]["downloads"]
 
-                    start_week = end_week + datetime.timedelta(days=1)
+                    start_week = end_week + dt.timedelta(days=1)
                     end_week = start_week + delta
                 
                 return downloads_over_time
             
             else:
-                delta = datetime.timedelta(days=1)
+                delta = dt.timedelta(days=1)
                 
                 while (start_datetime <= end_datetime):
                     if version.lower() == "current":
@@ -829,8 +829,8 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
 
             month_num = start_datetime.month
             if month_num < 10:
@@ -838,7 +838,7 @@ class APIclient():
             else:
                 month_str = str(month_num)
             num_days = calendar.monthrange(start_year, month_num)[1]
-            last_mo_day = datetime.date(start_year, month_num, num_days)
+            last_mo_day = dt.date(start_year, month_num, num_days)
 
             num_downloads = 0
             for id in self.deposits:
@@ -862,7 +862,7 @@ class APIclient():
             date_key = month_str + "-" + str(start_year)
             avg_downloads[date_key] = num_downloads / total_deposits
 
-            date_holder = last_mo_day + datetime.timedelta(days=1)
+            date_holder = last_mo_day + dt.timedelta(days=1)
 
             while date_holder <= end_datetime:
                 num_downloads = 0
@@ -898,7 +898,7 @@ class APIclient():
 
                 else:        
                     num_days = calendar.monthrange(year_num, month_num)[1]
-                    last_mo_day = datetime.date(year_num, month_num, num_days)
+                    last_mo_day = dt.date(year_num, month_num, num_days)
                     for id in self.deposits:
                         if version.lower() == "current":
                             self.payload = json.dumps({"downloads": {"stat": "record-download", 
@@ -919,7 +919,7 @@ class APIclient():
                 
                     date_key = month_str + "-" + str(start_year)
                     avg_downloads[date_key] = num_downloads / total_deposits
-                    date_holder = last_mo_day + datetime.timedelta(days=1)
+                    date_holder = last_mo_day + dt.timedelta(days=1)
 
         elif freq.lower() == "monthly" and latest:
             current_date = datetime.now()
@@ -959,16 +959,16 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
             day_of_week = start_datetime.weekday()
             if day_of_week == 6:
-                init_delta = datetime.timedelta(days=6)
+                init_delta = dt.timedelta(days=6)
             else:
-                init_delta = datetime.timedelta(days=5-day_of_week)
+                init_delta = dt.timedelta(days=5-day_of_week)
             start_week = start_datetime
             end_week = start_datetime + init_delta
-            delta = datetime.timedelta(days=6)
+            delta = dt.timedelta(days=6)
 
             while (start_week <= end_datetime):
                 num_downloads = 0
@@ -994,14 +994,14 @@ class APIclient():
                 date_key = "Week of " + start_week.strftime("%Y-%m-%d") + " - " + \
                             (end_datetime.strftime("%Y-%m-%d") if end_week > end_datetime else end_week.strftime("%Y-%m-%d"))
                 avg_downloads[date_key] = num_downloads / total_deposits
-                start_week = end_week + datetime.timedelta(days=1)
+                start_week = end_week + dt.timedelta(days=1)
                 end_week = start_week + delta
             
             return avg_downloads
         
         elif freq.lower() == "weekly" and latest:
             current_date = datetime.now()
-            first_date = current_date - datetime.timedelta(days=current_date.weekday()+1)
+            first_date = current_date - dt.timedelta(days=current_date.weekday()+1)
 
             num_downloads = 0
             for id in self.deposits:
@@ -1037,9 +1037,9 @@ class APIclient():
             end_year = int(end_y_m_d[0])
             end_month = int(end_y_m_d[1].lstrip('0'))
             end_day = int(end_y_m_d[2])
-            start_datetime = datetime.date(start_year, start_month, start_day)
-            end_datetime = datetime.date(end_year, end_month, end_day)
-            delta = datetime.timedelta(days=1)
+            start_datetime = dt.date(start_year, start_month, start_day)
+            end_datetime = dt.date(end_year, end_month, end_day)
+            delta = dt.timedelta(days=1)
                     
             while (start_datetime <= end_datetime):
                 num_downloads = 0

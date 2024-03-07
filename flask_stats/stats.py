@@ -1,5 +1,7 @@
 import subprocess
 import json
+import os
+from pathlib import Path
 from pprint import pprint
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -12,6 +14,9 @@ def stats():
     sections = []
     stat_types = ['total_deposits', 'avg_views', 'avg_downloads']
     freqs = ['monthly', 'weekly', 'daily']
+    path = Path(__file__).resolve().parent
+    stats_CLI_path = str(os.path.join(path, "stats_CLI.py"))
+    print(stats_CLI_path)
 
     for stat_type in stat_types:
         section = {}
@@ -19,12 +24,12 @@ def stats():
         table_entries = []
         # send command line request to get total no. of deposits
         if stat_type == 'total_deposits':
-            get_stat = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", stat_type, "--json-output"], 
+            get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "--json-output"], 
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
                                             universal_newlines=True,)
         else:
-            get_stat = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", stat_type, "all", "--json-output"], 
+            get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "all", "--json-output"], 
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
                                             universal_newlines=True,)
@@ -32,8 +37,8 @@ def stats():
 
         # print(get_stat.returncode)
 
-        pprint(stdout_stat)
-        # pprint(stderr_stat)
+        #pprint(stdout_stat)
+        #pprint(stderr_stat)
 
         dict_response = json.loads(stdout_stat)
 
@@ -43,12 +48,12 @@ def stats():
 
         for freq in freqs:
             if stat_type == 'total_deposits':
-                get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", stat_type, freq, "--latest", "--json-output"], 
+                get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, freq, "--latest", "--json-output"], 
                                                             stdout=subprocess.PIPE,
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
             else:
-                get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", "stats_CLI.py", stat_type, "all", freq, "--latest", "--json-output"], 
+                get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "all", freq, "--latest", "--json-output"], 
                                                             stdout=subprocess.PIPE,
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
