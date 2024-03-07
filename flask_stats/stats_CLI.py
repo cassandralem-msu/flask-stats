@@ -22,7 +22,7 @@ def request_total_deposits(freq, latest, json_output):
         else:
             if latest:
                 click.echo(json.dumps({'stat_type': 'Total number of deposits', 
-                                       'title': 'today ' if freq == "daily" else 'this ' + freq.replace('ly', '') \
+                                       'title': 'today' if freq == "daily" else 'this ' + freq.replace('ly', '') \
                                        + ' (' + no_deposits['time'] + ')', 
                                        'stat': no_deposits['stat']}))
             else:

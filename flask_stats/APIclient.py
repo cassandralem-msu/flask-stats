@@ -57,7 +57,12 @@ class APIclient():
                     time_dict[month_year] = time_dict.get(month_year, 0) + 1
                 
                 if latest:
-                    return {'time': month_year, 'stat': time_dict[month_year]}
+                    current_date = datetime.now()
+                    current_month = str(current_date.month)
+                    current_year = str(current_date.year)
+                    latest_str = current_month if int(current_date.month) > 9 else '0' + current_month \
+                                + '-' + current_year
+                    return {'time': latest_str, 'stat': time_dict[latest_str]}
             
             elif freq.lower() == 'daily':
                 time_dict = {}
@@ -67,7 +72,12 @@ class APIclient():
                     time_dict[y_m_d] = time_dict.get(y_m_d, 0) + 1
                 
                 if latest:
-                    return {'time': y_m_d, 'stat': time_dict[y_m_d]}
+                    current_date = datetime.now()
+                    current_date_str = str(current_date.year) + '-' \
+                                        + (str(current_date.month) if int(current_date.month) > 9 else '0' + str(current_date.month)) \
+                                        + '-' + (str(current_date.day) if int(current_date.day) > 9 else '0' + str(current_date.day))
+                    print(current_date_str)
+                    return {'time': current_date_str, 'stat': time_dict[current_date_str]}
                 
             # weekly: isocalendar() from datetime.time
             elif freq.lower() == 'weekly':
@@ -82,7 +92,11 @@ class APIclient():
                     time_dict[week_str] = time_dict.get(week_str, 0) + 1
                 
                 if latest:
-                    return {'time': week_str, 'stat': time_dict[week_str]}
+                    current_date = datetime.now()
+                    current_week = current_date.isocalendar()[1]
+                    current_year = str(current_date.year)
+                    current_week_str = 'Week ' + str(current_week) + ', ' + current_year
+                    return {'time': current_week_str, 'stat': time_dict[current_week_str]}
         
         return time_dict
         
