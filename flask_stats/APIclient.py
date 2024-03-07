@@ -925,16 +925,16 @@ class APIclient():
             current_date = datetime.now()
             first_date = f'{current_date.year}-{current_date.month}-01'
 
-            num_views = 0
+            num_downloads = 0
             for id in self.deposits:
                 if version.lower() == "current":
-                    self.payload = json.dumps({"views": {"stat": "record-download", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download", 
                                                         "params": {"start_date": first_date, 
                                                                     "end_date": current_date.strftime('%Y-%m-%d'), 
                                                                     "recid": id}}})
                 else:
                     # id needs to be the parent_recid
-                    self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download-all-versions", 
                                                 "params": {"start_date": first_date, 
                                                             "end_date": current_date.strftime('%Y-%m-%d'), 
                                                             "parent_recid": id}}})
@@ -1006,21 +1006,21 @@ class APIclient():
             num_downloads = 0
             for id in self.deposits:
                 if version.lower() == "current":
-                    self.payload = json.dumps({"views": {"stat": "record-download", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download", 
                                                         "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
                                                                     "end_date": current_date.strftime('%Y-%m-%d'), 
                                                                     "recid": id}}})
                 else:
                     # id needs to be the parent_recid
-                    self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download-all-versions", 
                                                 "params": {"start_date": first_date.strftime('%Y-%m-%d'), 
                                                             "end_date": current_date.strftime('%Y-%m-%d'), 
                                                             "parent_recid": id}}})
                 response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
                 if unique:
-                    num_views += response["downloads"]["unique_downloads"]
+                    num_downloads += response["downloads"]["unique_downloads"]
                 else:
-                    num_views += response["downloads"]["downloads"]
+                    num_downloads += response["downloads"]["downloads"]
             
             avg_downloads_latest_week = num_downloads / total_deposits
             week_str = first_date.strftime('%Y-%m-%d') + ' - ' + current_date.strftime('%Y-%m-%d')
@@ -1071,13 +1071,13 @@ class APIclient():
             num_downloads = 0
             for id in self.deposits:
                 if version.lower() == "current":
-                    self.payload = json.dumps({"views": {"stat": "record-download", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download", 
                                                         "params": {"start_date": current_date.strftime('%Y-%m-%d'), 
                                                                     "end_date": current_date.strftime('%Y-%m-%d'), 
                                                                     "recid": id}}})
                 else:
                     # id needs to be the parent_recid
-                    self.payload = json.dumps({"views": {"stat": "record-download-all-versions", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download-all-versions", 
                                                 "params": {"start_date": current_date.strftime('%Y-%m-%d'), 
                                                             "end_date": current_date.strftime('%Y-%m-%d'), 
                                                             "parent_recid": id}}})

@@ -59,6 +59,7 @@ def stats():
                                                             universal_newlines=True,)
             stdout_table, stderr_table = get_no_deposits_time.communicate()
             pprint(stdout_table)
+            pprint(stderr_table)
             dict_response = json.loads(stdout_table)
             table_headings.append(dict_response['title'])
             #print(dict_response['title'])
