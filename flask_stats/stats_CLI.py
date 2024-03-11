@@ -221,29 +221,50 @@ def request_avg_downloads(version, freq, start_date, end_date, latest, unique, j
 
 
 @cli.command(name='top_views')
-@click.argument('num', default=100)
+@click.argument('num', default='100')
 def request_top_views(num):
     client = APIclient(token)
-    sorted_views = client.top_views(num)
+    sorted_views = client.top_views(int(num))
+    top_deposits_views = {}
+    for id in sorted_views:
+        no_views = sorted_views[id]['stats']['this_version']['views']
+        no_unique_views = sorted_views[id]['stats']['this_version']['unique_views']
+        no_downloads = sorted_views[id]['stats']['this_version']['downloads']
+        no_unique_downloads = sorted_views[id]['stats']['this_version']['unique_downloads']
+        top_deposits_views[id] = [no_views, no_unique_views, no_downloads, no_unique_downloads]
+    click.echo(json.dumps(top_deposits_views))
+
+    """
     click.echo(f"Top {num} deposits by number of views:")
     index = -1
     for i in range(0, num):
         key = list(sorted_views)[index]
         click.echo(f"Deposit {key}: {sorted_views[key]} views")
         index += 1
-
+    """
 
 @cli.command(name='top_downloads')
 @click.argument('num', default=100)
 def request_top_downloads(num):
     client = APIclient(token)
     sorted_downloads = client.top_downloads(num)
+    top_deposits_downloads = {}
+    for id in sorted_downloads:
+        no_views = sorted_downloads[id]['stats']['this_version']['views']
+        no_unique_views = sorted_downloads[id]['stats']['this_version']['unique_views']
+        no_downloads = sorted_downloads[id]['stats']['this_version']['downloads']
+        no_unique_downloads = sorted_downloads[id]['stats']['this_version']['unique_downloads']
+        top_deposits_downloads[id] = [no_views, no_unique_views, no_downloads, no_unique_downloads]
+    click.echo(json.dumps(top_deposits_downloads))
+    
+    """
     click.echo(f"Top {num} deposits by number of downloads:")
     index = -1
     for i in range(0, num):
         key = list(sorted_downloads)[index]
         click.echo(f"Deposit {key}: {sorted_downloads[key]} downloads")
         index += 1
+    """
 
 
 if __name__ == '__main__':

@@ -1114,7 +1114,8 @@ class APIclient():
         
     # determine the top 100 deposits by no. of views, and determine stats of those deposits
     def top_views(self, num):
-        views = self.num_views('all', 'current')
+        self.get_records('current')
+        views = self.deposits
         keys = list(views.keys())
         values = list(views.values())
         sorted_indices = np.argsort(values)
@@ -1125,7 +1126,8 @@ class APIclient():
     
     # determine the top 100 deposits by no. of downloads, and determine stats of those deposits
     def top_downloads(self, num):
-        downloads = self.num_downloads('all', 'current')
+        self.get_records('current')
+        downloads = self.deposits
         keys = list(downloads.keys())
         values = list(downloads.values())
         sorted_indices = np.argsort(values)

@@ -4696,3 +4696,4 @@ def test_total_deposits(requests_mock):
     print(td)
     assert td < 20000 and td > 10000
 
+# test to check that top_views and top_downloads return the correct number of deposits

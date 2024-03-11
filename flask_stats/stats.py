@@ -76,16 +76,18 @@ def stats():
         section = {}
         table_headings = []
         table_entries = []
-        num = 100
+        num = '100'
 
         get_top_deposits = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, num], 
                                                             stdout=subprocess.PIPE,
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
         stdout_top, stderr_top = get_top_deposits.communicate()
-        dict_response = json.loads(stdout_top)
+        table_entries = json.loads(stdout_top)
 
-        section['table_headings'] = table_headings
+        section['main_heading'] = "Statistics for the top 100 deposits (by # of views)"
+        section['table_headings'] = ["Deposit ID", "No. of views (current version)", 
+                                     "No. of unique views (current version)"]
         section['table_entries'] = table_entries
 
         sections_part_2.append(section)

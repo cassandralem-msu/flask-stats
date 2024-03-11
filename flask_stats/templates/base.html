@@ -9,8 +9,7 @@
   <h1>Invenio statistics dashboard</h1>
   
   {% for section in sections_part_1 %}
-    <h3> {{ section['main_heading'] }}:</h3>
-    {{ section['main_stat'] }}
+    <h3> {{ section['main_heading'] }}: {{ section['main_stat'] }}</h3>
 
     <table border="1">
       <tr>
@@ -28,5 +27,27 @@
       <!-- Add more rows as needed -->
     </table>
   {% endfor %}
+
+  {% for section in sections_part_2 %}
+    <h3> {{ section['main_heading'] }}:</h3>
+
+    <table border="1">
+      <tr>
+          <th></th>
+          {% for table_heading in section['table_headings'] %}
+            <th> {{ table_heading }} </th>
+          {% endfor %}
+      </tr>
+      <tr>
+          {% for id in section['table_entries'] %}
+            <th> {{ id }} </th>
+            {% for stat in section['table_entries'][id] %}
+              <th> {{ stat }} </th>
+          {% endfor %}
+      </tr>
+      <!-- Add more rows as needed -->
+    </table>
+  {% endfor %}
+
 </body>
 </html>
