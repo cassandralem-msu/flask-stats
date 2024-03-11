@@ -11,14 +11,15 @@ bp = Blueprint('stats', __name__, url_prefix='/')
 
 @bp.route('/')
 def stats():
-    sections = []
-    stat_types = ['total_deposits', 'avg_views', 'avg_downloads']
+    sections_part_1 = []
+    sections_part_2 = []
+    stat_types_1 = ['total_deposits', 'avg_views', 'avg_downloads']
+    stat_types_2 = ['top_views', 'top_downloads']
     freqs = ['monthly', 'weekly', 'daily']
     path = Path(__file__).resolve().parent
     stats_CLI_path = str(os.path.join(path, "stats_CLI.py"))
-    print(stats_CLI_path)
 
-    for stat_type in stat_types:
+    for stat_type in stat_types_1:
         section = {}
         table_headings = []
         table_entries = []
@@ -69,6 +70,24 @@ def stats():
         section['table_headings'] = table_headings
         section['table_entries'] = table_entries
 
-        sections.append(section)
+        sections_part_1.append(section)
 
-    return render_template('base.html', sections=sections)
+    for stat_type in stat_types_2:
+        section = {}
+        table_headings = []
+        table_entries = []
+        num = 100
+
+        get_top_deposits = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, num], 
+                                                            stdout=subprocess.PIPE,
+                                                            stderr=subprocess.PIPE,
+                                                            universal_newlines=True,)
+        stdout_top, stderr_top = get_top_deposits.communicate()
+        dict_response = json.loads(stdout_top)
+
+        section['table_headings'] = table_headings
+        section['table_entries'] = table_entries
+
+        sections_part_2.append(section)
+
+    return render_template('base.html', sections_part_1=sections_part_1, sections_part_2=sections_part_2)

@@ -2,6 +2,7 @@ import requests
 import numpy as np
 import json
 import calendar
+import itertools
 import datetime as dt
 from datetime import datetime
 
@@ -39,7 +40,7 @@ class APIclient():
             
 
     # function that returns the number of deposits, either over time or total
-    def total_deposits(self, freq, latest):
+    def num_deposits(self, freq, latest):
         if self.records == None:
             self.get_records('current')
 
@@ -60,9 +61,11 @@ class APIclient():
                     current_date = datetime.now()
                     current_month = str(current_date.month)
                     current_year = str(current_date.year)
-                    latest_str = current_month if int(current_date.month) > 9 else '0' + current_month \
+                    current_month_str = current_month if int(current_date.month) > 9 else '0' + current_month \
                                 + '-' + current_year
-                    return {'time': latest_str, 'stat': time_dict[latest_str]}
+                    if current_month_str in time_dict:
+                        return {'time': current_month_str, 'stat': time_dict[current_month_str]}
+                    return {'time': current_month_str, 'stat': 0}
             
             elif freq.lower() == 'daily':
                 time_dict = {}
@@ -76,8 +79,9 @@ class APIclient():
                     current_date_str = str(current_date.year) + '-' \
                                         + (str(current_date.month) if int(current_date.month) > 9 else '0' + str(current_date.month)) \
                                         + '-' + (str(current_date.day) if int(current_date.day) > 9 else '0' + str(current_date.day))
-                    print(current_date_str)
-                    return {'time': current_date_str, 'stat': time_dict[current_date_str]}
+                    if current_date_str in time_dict:
+                        return {'time': current_date_str, 'stat': time_dict[current_date_str]}
+                    return {'time': current_date_str, 'stat': 0}
                 
             # weekly: isocalendar() from datetime.time
             elif freq.lower() == 'weekly':
@@ -96,13 +100,15 @@ class APIclient():
                     current_week = current_date.isocalendar()[1]
                     current_year = str(current_date.year)
                     current_week_str = 'Week ' + str(current_week) + ', ' + current_year
-                    return {'time': current_week_str, 'stat': time_dict[current_week_str]}
+                    if current_week_str in time_dict:
+                        return {'time': current_week_str, 'stat': time_dict[current_week_str]}
+                    return {'time': current_week_str, 'stat': 0}
         
         return time_dict
         
     
     # function that returns the total num of views of a deposit
-    def total_views(self, id, version, start_date, end_date, freq, unique):
+    def num_views(self, id, version, start_date, end_date, freq, unique):
         if id == 'all':
             self.get_records(version)
             views_dict = {}
@@ -339,7 +345,7 @@ class APIclient():
                     no_views = response['stats']['all_versions']['views']
                     total_views += no_views
 
-            return total_views / total_deposits
+            return round(total_views / total_deposits, 2)
         
         elif freq.lower() == "monthly" and start_date != None and end_date != None:
             avg_views = {}
@@ -382,7 +388,7 @@ class APIclient():
                     num_views += response["views"]["views"]
             
             date_key = month_str + "-" + str(start_year)
-            avg_views[date_key] = num_views / total_deposits
+            avg_views[date_key] = round(num_views / total_deposits, 2)
 
             date_holder = last_mo_day + dt.timedelta(days=1)
 
@@ -414,7 +420,7 @@ class APIclient():
                             num_views += response["views"]["views"]
             
                     date_key = month_str + "-" + str(start_year)
-                    avg_views[date_key] = num_views / total_deposits
+                    avg_views[date_key] = round(num_views / total_deposits, 2)
                     
                     return avg_views
 
@@ -440,7 +446,7 @@ class APIclient():
                             num_views += response["views"]["views"]
                 
                     date_key = month_str + "-" + str(start_year)
-                    avg_views[date_key] = num_views / total_deposits
+                    avg_views[date_key] = round(num_views / total_deposits, 2)
                     date_holder = last_mo_day + dt.timedelta(days=1)
 
         elif freq.lower() == "monthly" and latest:
@@ -466,7 +472,7 @@ class APIclient():
                 else:
                     num_views += response["views"]["views"]
             
-            avg_views_latest_mo = num_views / total_deposits
+            avg_views_latest_mo = round(num_views / total_deposits, 2)
             month_str = f'{current_date.month}-{current_date.year}'
 
             return {'time': month_str, 'stat': avg_views_latest_mo}
@@ -515,7 +521,7 @@ class APIclient():
 
                 date_key = "Week of " + start_week.strftime("%Y-%m-%d") + " - " + \
                             (end_datetime.strftime("%Y-%m-%d") if end_week > end_datetime else end_week.strftime("%Y-%m-%d"))
-                avg_views[date_key] = num_views / total_deposits
+                avg_views[date_key] = round(num_views / total_deposits, 2)
                 start_week = end_week + dt.timedelta(days=1)
                 end_week = start_week + delta
             
@@ -544,7 +550,7 @@ class APIclient():
                 else:
                     num_views += response["views"]["views"]
             
-            avg_views_latest_week = num_views / total_deposits
+            avg_views_latest_week = round(num_views / total_deposits, 2)
             week_str = first_date.strftime('%Y-%m-%d') + ' - ' + current_date.strftime('%Y-%m-%d')
 
             return {'time': week_str, 'stat': avg_views_latest_week}
@@ -583,7 +589,7 @@ class APIclient():
                     else:
                         num_views += response["views"]["views"]
 
-                avg_views[start_datetime.strftime("%Y-%m-%d")] = num_views / total_deposits
+                avg_views[start_datetime.strftime("%Y-%m-%d")] = round(num_views / total_deposits, 2)
                 start_datetime += delta
 
             return avg_views
@@ -610,7 +616,7 @@ class APIclient():
                 else:
                     num_views += response["views"]["views"]
             
-            avg_views_today = num_views / total_deposits
+            avg_views_today = round(num_views / total_deposits, 2)
             today_str = current_date.strftime('%Y-%m-%d')
 
             return {'time': today_str, 'stat': avg_views_today}
@@ -831,7 +837,7 @@ class APIclient():
                     response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
                     total_downloads += response['stats']['this_version']['downloads']
 
-            return total_downloads / total_deposits
+            return round(total_downloads / total_deposits, 2)
         
         elif freq.lower() == "monthly" and start_date != None and end_date != None:
             avg_downloads = {}
@@ -874,7 +880,7 @@ class APIclient():
                     num_downloads += response["downloads"]["downloads"]
             
             date_key = month_str + "-" + str(start_year)
-            avg_downloads[date_key] = num_downloads / total_deposits
+            avg_downloads[date_key] = round(num_downloads / total_deposits, 2)
 
             date_holder = last_mo_day + dt.timedelta(days=1)
 
@@ -906,7 +912,7 @@ class APIclient():
                             num_downloads += response["downloads"]["downloads"]
             
                     date_key = month_str + "-" + str(start_year)
-                    avg_downloads[date_key] = num_downloads / total_deposits
+                    avg_downloads[date_key] = round(num_downloads / total_deposits, 2)
                     
                     return avg_downloads
 
@@ -932,7 +938,7 @@ class APIclient():
                             num_downloads += response["downloads"]["downloads"]
                 
                     date_key = month_str + "-" + str(start_year)
-                    avg_downloads[date_key] = num_downloads / total_deposits
+                    avg_downloads[date_key] = round(num_downloads / total_deposits, 2)
                     date_holder = last_mo_day + dt.timedelta(days=1)
 
         elif freq.lower() == "monthly" and latest:
@@ -958,7 +964,7 @@ class APIclient():
                 else:
                     num_downloads += response["downloads"]["downloads"]
             
-            avg_downloads_latest_mo = num_downloads / total_deposits
+            avg_downloads_latest_mo = round(num_downloads / total_deposits, 2)
             month_str = f'{current_date.month}-{current_date.year}'
 
             return {'time': month_str, 'stat': avg_downloads_latest_mo}
@@ -1007,7 +1013,7 @@ class APIclient():
 
                 date_key = "Week of " + start_week.strftime("%Y-%m-%d") + " - " + \
                             (end_datetime.strftime("%Y-%m-%d") if end_week > end_datetime else end_week.strftime("%Y-%m-%d"))
-                avg_downloads[date_key] = num_downloads / total_deposits
+                avg_downloads[date_key] = round(num_downloads / total_deposits, 2)
                 start_week = end_week + dt.timedelta(days=1)
                 end_week = start_week + delta
             
@@ -1036,7 +1042,7 @@ class APIclient():
                 else:
                     num_downloads += response["downloads"]["downloads"]
             
-            avg_downloads_latest_week = num_downloads / total_deposits
+            avg_downloads_latest_week = round(num_downloads / total_deposits, 2)
             week_str = first_date.strftime('%Y-%m-%d') + ' - ' + current_date.strftime('%Y-%m-%d')
 
             return {'time': week_str, 'stat': avg_downloads_latest_week}
@@ -1074,7 +1080,7 @@ class APIclient():
                     else:
                         num_downloads += response["downloads"]["downloads"]
 
-                avg_downloads[start_datetime.strftime("%Y-%m-%d")] = num_downloads / total_deposits
+                avg_downloads[start_datetime.strftime("%Y-%m-%d")] = round(num_downloads / total_deposits, 2)
                 start_datetime += delta
 
             return avg_downloads
@@ -1101,17 +1107,28 @@ class APIclient():
                 else:
                     num_downloads += response["downloads"]["downloads"]
             
-            avg_downloads_today = num_downloads / total_deposits
+            avg_downloads_today = round(num_downloads / total_deposits, 2)
             today_str = current_date.strftime('%Y-%m-%d')
 
             return {'time': today_str, 'stat': avg_downloads_today}
         
-
-    # return a dictionary of deposits and number of downloads, sorted
-    def top_downloads(self):
-        downloads = self.total_downloads('all')
+    # determine the top 100 deposits by no. of views, and determine stats of those deposits
+    def top_views(self, num):
+        views = self.num_views('all', 'current')
+        keys = list(views.keys())
+        values = list(views.values())
+        sorted_indices = np.argsort(values)
+        sorted_dict = {keys[i]: values[i] for i in sorted_indices}
+        top_100_views_dict = dict(itertools.islice(sorted_dict.items(), num))
+        return top_100_views_dict
+    
+    
+    # determine the top 100 deposits by no. of downloads, and determine stats of those deposits
+    def top_downloads(self, num):
+        downloads = self.num_downloads('all', 'current')
         keys = list(downloads.keys())
         values = list(downloads.values())
         sorted_indices = np.argsort(values)
         sorted_dict = {keys[i]: values[i] for i in sorted_indices}
-        return sorted_dict
+        top_100_downloads_dict = dict(itertools.islice(sorted_dict.items(), num))
+        return top_100_downloads_dict

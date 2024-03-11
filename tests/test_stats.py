@@ -4695,3 +4695,4 @@ def test_total_deposits(requests_mock):
     assert isinstance(td, int)
     print(td)
     assert td < 20000 and td > 10000
+
