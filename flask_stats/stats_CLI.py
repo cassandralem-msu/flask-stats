@@ -1,6 +1,7 @@
 import click
 import json
 from flask_stats.APIclient import APIclient
+from collections import OrderedDict
 import os
 
 token = os.environ['CLI_TOKEN']
@@ -225,7 +226,7 @@ def request_avg_downloads(version, freq, start_date, end_date, latest, unique, j
 def request_top_views(num):
     client = APIclient(token)
     sorted_views = client.top_views(int(num))
-    top_deposits_views = {}
+    top_deposits_views = OrderedDict()
     for id in sorted_views:
         no_views = sorted_views[id]['stats']['this_version']['views']
         no_unique_views = sorted_views[id]['stats']['this_version']['unique_views']
@@ -244,11 +245,11 @@ def request_top_views(num):
     """
 
 @cli.command(name='top_downloads')
-@click.argument('num', default=100)
+@click.argument('num', default='100')
 def request_top_downloads(num):
     client = APIclient(token)
-    sorted_downloads = client.top_downloads(num)
-    top_deposits_downloads = {}
+    sorted_downloads = client.top_downloads(int(num))
+    top_deposits_downloads = OrderedDict()
     for id in sorted_downloads:
         no_views = sorted_downloads[id]['stats']['this_version']['views']
         no_unique_views = sorted_downloads[id]['stats']['this_version']['unique_views']

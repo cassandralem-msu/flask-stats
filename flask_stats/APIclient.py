@@ -5,6 +5,7 @@ import calendar
 import itertools
 import datetime as dt
 from datetime import datetime
+from collections import OrderedDict
 
 # create class for managing stats queried from Invenio API response
 
@@ -623,7 +624,7 @@ class APIclient():
 
     
     # function that returns the total num of downloads of a deposit
-    def total_downloads(self, id, version, start_date, end_date, freq, unique):
+    def num_downloads(self, id, version=None, start_date=None, end_date=None, freq=None, unique=None):
         if id == 'all':
             self.get_records(version)
             downloads_dict = {}
@@ -1115,11 +1116,14 @@ class APIclient():
     # determine the top 100 deposits by no. of views, and determine stats of those deposits
     def top_views(self, num):
         self.get_records('current')
-        views = self.deposits
+        views = self.num_views('all', 'current')
         keys = list(views.keys())
         values = list(views.values())
         sorted_indices = np.argsort(values)
+        sorted_dict = OrderedDict()
         sorted_dict = {keys[i]: values[i] for i in sorted_indices}
+        for id in sorted_dict:
+            sorted_dict[id] = self.deposits[id]
         top_100_views_dict = dict(itertools.islice(sorted_dict.items(), num))
         return top_100_views_dict
     
@@ -1127,10 +1131,14 @@ class APIclient():
     # determine the top 100 deposits by no. of downloads, and determine stats of those deposits
     def top_downloads(self, num):
         self.get_records('current')
-        downloads = self.deposits
+        downloads = self.num_downloads('all', 'current')
         keys = list(downloads.keys())
         values = list(downloads.values())
         sorted_indices = np.argsort(values)
+        sorted_dict = OrderedDict()
         sorted_dict = {keys[i]: values[i] for i in sorted_indices}
+        for id in sorted_dict:
+            sorted_dict[id] = self.deposits[id]
         top_100_downloads_dict = dict(itertools.islice(sorted_dict.items(), num))
+
         return top_100_downloads_dict

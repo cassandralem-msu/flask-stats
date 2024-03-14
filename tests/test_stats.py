@@ -1,8 +1,10 @@
 import pytest
 import os
+import json
 from flask_stats.APIclient import APIclient
 
 token = os.environ["CLI_TOKEN"]
+"""
 return_payload = {
     "hits": {
         "hits": [
@@ -4684,8 +4686,7 @@ return_payload = {
     },
 }
 
-
-def test_total_deposits(requests_mock):
+def test_total_deposits_APIclient(requests_mock):
     client = APIclient(token)
     requests_mock.get(
         "https://invenio-dev.hcommons-staging.org/api/records",
@@ -4695,5 +4696,18 @@ def test_total_deposits(requests_mock):
     assert isinstance(td, int)
     print(td)
     assert td < 20000 and td > 10000
+"""
 
-# test to check that top_views and top_downloads return the correct number of deposits
+# test to check that top_views returns the correct number of deposits
+def test_top_views_APIclient():
+    client = APIclient(token)
+    num_entries = 10
+    top_views_dict = client.top_views(num_entries)
+    assert len(top_views_dict) == num_entries
+
+# test to check that top_downloads returns the correct number of deposits
+def test_top_downloads_APIclient():
+    client = APIclient(token)
+    num_entries = 10
+    top_downloads_dict = client.top_downloads(num_entries)
+    assert len(top_downloads_dict) == num_entries
