@@ -4701,13 +4701,13 @@ def test_total_deposits_APIclient(requests_mock):
 # test to check that top_views returns the correct number of deposits
 def test_top_views_APIclient():
     client = APIclient(token)
-    num_entries = 10
+    num_entries = 100
     top_views_dict = client.top_views(num_entries)
     assert len(top_views_dict) == num_entries
 
 # test to check that top_downloads returns the correct number of deposits
 def test_top_downloads_APIclient():
     client = APIclient(token)
-    num_entries = 10
+    num_entries = 100
     top_downloads_dict = client.top_downloads(num_entries)
     assert len(top_downloads_dict) == num_entries

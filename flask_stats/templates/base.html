@@ -38,13 +38,15 @@
             <th> {{ table_heading }} </th>
           {% endfor %}
       </tr>
+
+      {% for id in section['table_entries'] %}
       <tr>
-          {% for id in section['table_entries'] %}
-            <th> {{ id }} </th>
+          <th> {{ id }} </th>
             {% for stat in section['table_entries'][id] %}
               <th> {{ stat }} </th>
-          {% endfor %}
+            {% endfor %}
       </tr>
+      {% endfor %}
       <!-- Add more rows as needed -->
     </table>
   {% endfor %}

@@ -38,6 +38,7 @@ class APIclient():
             else:
                 id = item['parent']['id']
             self.deposits[id] = item
+        print(len(self.deposits))
             
 
     # function that returns the number of deposits, either over time or total
@@ -109,7 +110,7 @@ class APIclient():
         
     
     # function that returns the total num of views of a deposit
-    def num_views(self, id, version, start_date, end_date, freq, unique):
+    def num_views(self, id, version=None, start_date=None, end_date=None, freq=None, unique=None):
         if id == 'all':
             self.get_records(version)
             views_dict = {}
@@ -122,6 +123,7 @@ class APIclient():
                     views_dict[key] = self.deposits[key]['stats']['all_versions']['unique_views']
                 else:
                     views_dict[key] = self.deposits[key]['stats']['all_versions']['views']
+            print(len(views_dict))
             return views_dict
         
         else:
@@ -639,6 +641,26 @@ class APIclient():
                     downloads_dict[key] = self.deposits[key]['stats']['all_versions']['downloads']
             return downloads_dict
         else:
+            if freq == None:
+                if version.lower() == "current":
+                    self.payload = json.dumps({"downloads": {"stat": "record-download", 
+                                                        "params": {"recid": id}}})
+                    response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                    if unique:
+                        num_downloads = response["downloads"]["unique_downloads"]
+                    else:
+                        num_downloads = response["downloads"]["downloads"]
+                else:
+                    # id needs to be the parent_recid
+                    self.payload = json.dumps({"downloads-all-versions": {"stat": "record-download-all-versions", 
+                                                "params": {"parent_recid": id}}})
+                    response = requests.post(self.stats_url, headers=self.headers, data=self.payload, verify=False).json()
+                    if unique:
+                        num_downloads = response["downloads-all-versions"]["unique_downloads"]
+                    else:
+                        num_downloads = response["downloads-all-versions"]["downloads"]
+                return num_downloads
+
             downloads_over_time = {}
             start_y_m_d = start_date.split("-")
             start_year = int(start_y_m_d[0])
@@ -660,7 +682,7 @@ class APIclient():
                 num_days = calendar.monthrange(start_year, month_num)[1]
                 last_mo_day = dt.date(start_year, month_num, num_days)
                 if version.lower() == "current":
-                            self.payload = json.dumps({"downloads": {"stat": "record-download", 
+                    self.payload = json.dumps({"downloads": {"stat": "record-download", 
                                                         "params": {"start_date": start_date, 
                                                                     "end_date": last_mo_day.strftime('%Y-%m-%d'), 
                                                                     "recid": id}}})
@@ -1140,5 +1162,4 @@ class APIclient():
         for id in sorted_dict:
             sorted_dict[id] = self.deposits[id]
         top_100_downloads_dict = dict(itertools.islice(sorted_dict.items(), num))
-
         return top_100_downloads_dict

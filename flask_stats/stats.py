@@ -59,8 +59,8 @@ def stats():
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
             stdout_table, stderr_table = get_no_deposits_time.communicate()
-            pprint(stdout_table)
-            pprint(stderr_table)
+            # pprint(stdout_table)
+            # pprint(stderr_table)
             dict_response = json.loads(stdout_table)
             table_headings.append(dict_response['title'])
             #print(dict_response['title'])
@@ -85,9 +85,13 @@ def stats():
         stdout_top, stderr_top = get_top_deposits.communicate()
         table_entries = json.loads(stdout_top)
 
-        section['main_heading'] = "Statistics for the top 100 deposits (by # of views)"
-        section['table_headings'] = ["Deposit ID", "No. of views (current version)", 
-                                     "No. of unique views (current version)"]
+        if stat_type == "top_views":
+            section['main_heading'] = "Statistics for the top 100 deposits (by # of views)"
+        else:
+            section['main_heading'] = "Statistics for the top 100 deposits (by # of downloads)"
+        
+        section['table_headings'] = ["No. of views (current version)", "No. of unique views (current version)", "No. of downloads (current version)", 
+                                     "No. of unique downloads (current version)"]
         section['table_entries'] = table_entries
 
         sections_part_2.append(section)
