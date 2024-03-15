@@ -30,6 +30,7 @@ class APIclient():
     # also creates dictionary mapping deposit ID to dictionary of deposit info (from records endpoint)
     def get_records(self, version):
         # .json() turns the JSON string into a python dictionary
+        self.payload = json.dumps({'size': '100000'})
         self.records = requests.get(self.records_url, headers=self.headers).json()
         # create the dictionary
         for item in self.records['hits']['hits']:
@@ -38,7 +39,6 @@ class APIclient():
             else:
                 id = item['parent']['id']
             self.deposits[id] = item
-        print(len(self.deposits))
             
 
     # function that returns the number of deposits, either over time or total
@@ -123,7 +123,6 @@ class APIclient():
                     views_dict[key] = self.deposits[key]['stats']['all_versions']['unique_views']
                 else:
                     views_dict[key] = self.deposits[key]['stats']['all_versions']['views']
-            print(len(views_dict))
             return views_dict
         
         else:
