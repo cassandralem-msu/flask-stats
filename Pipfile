@@ -7,6 +7,9 @@ name = "pypi"
 build = "*"
 setuptools = "*"
 flask-stats = {file = ".", editable = true}
+numpy = "*"
+requests-mock = "*"
+pytest = "*"
 
 [dev-packages]
 
