@@ -1,4 +1,4 @@
-README.rst
+README.md
 pyproject.toml
 flask_stats/APIclient.py
 flask_stats/__init__.py

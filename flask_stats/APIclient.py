@@ -22,7 +22,7 @@ class APIclient():
         self.payload = None
         self.records = None
         self.deposits = {}
-        self.records_url = 'https://invenio-dev.hcommons-staging.org/api/records'
+        self.records_url = 'https://invenio-dev.hcommons-staging.org/api/records?size=1000'
         self.stats_url = 'https://invenio-dev.hcommons-staging.org/api/stats'
 
 
@@ -30,7 +30,6 @@ class APIclient():
     # also creates dictionary mapping deposit ID to dictionary of deposit info (from records endpoint)
     def get_records(self, version):
         # .json() turns the JSON string into a python dictionary
-        self.payload = json.dumps({'size': '100000'})
         self.records = requests.get(self.records_url, headers=self.headers).json()
         # create the dictionary
         for item in self.records['hits']['hits']:
