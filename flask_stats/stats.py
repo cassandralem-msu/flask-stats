@@ -1,6 +1,7 @@
 import subprocess
 import json
 import os
+from flask_stats.APIclient import APIclient
 from pathlib import Path
 from pprint import pprint
 from flask import (
@@ -11,6 +12,7 @@ bp = Blueprint('stats', __name__, url_prefix='/')
 
 @bp.route('/')
 def stats():
+    client = APIclient()
     sections_part_1 = []
     sections_part_2 = []
     stat_types_1 = ['total_deposits', 'avg_views', 'avg_downloads']
@@ -25,10 +27,11 @@ def stats():
         table_entries = []
         # send command line request to get total no. of deposits
         if stat_type == 'total_deposits':
-            get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "--json-output"], 
+            """ get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "--json-output"], 
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
-                                            universal_newlines=True,)
+                                            universal_newlines=True,) """
+            total_deposits = client.num_deposits()
         else:
             get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "all", "--json-output"], 
                                             stdout=subprocess.PIPE,
@@ -38,8 +41,8 @@ def stats():
 
         # print(get_stat.returncode)
 
-        #pprint(stdout_stat)
-        #pprint(stderr_stat)
+        pprint(stdout_stat)
+        pprint(stderr_stat)
 
         dict_response = json.loads(stdout_stat)
 
