@@ -22,7 +22,7 @@ class APIclient():
         self.payload = None
         self.records = None
         self.deposits = {}
-        self.records_url = 'https://invenio-dev.hcommons-staging.org/api/records?size=1000'
+        self.records_url = 'https://invenio-dev.hcommons-staging.org/api/records'
         self.stats_url = 'https://invenio-dev.hcommons-staging.org/api/stats'
 
 
@@ -41,7 +41,7 @@ class APIclient():
             
 
     # function that returns the number of deposits, either over time or total
-    def num_deposits(self, freq, latest):
+    def num_deposits(self, freq=None, latest=None):
         if self.records == None:
             self.get_records('current')
 
