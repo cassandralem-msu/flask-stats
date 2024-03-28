@@ -68,7 +68,7 @@ class APIclient():
                     url = self.records_url + '?q=created:' + current_month_str
                     month_deposits_response = requests.get(url, headers=self.headers).json()
                     no_deposits = month_deposits_response['hits']['total']
-                    return {'time': current_month_str, 'stat': no_deposits}
+                    return {'title': current_month_str, 'stat': no_deposits}
             
             # weekly: isocalendar() from datetime.time
             elif freq.lower() == 'weekly':
@@ -94,7 +94,7 @@ class APIclient():
                     week_deposits_response = requests.get(url, headers=self.headers).json()
                     no_deposits = week_deposits_response['hits']['total']
                     current_week_str = 'Week of ' + start_week + ' - ' + end_week
-                    return {'time': current_week_str, 'stat': no_deposits}
+                    return {'title': current_week_str, 'stat': no_deposits}
             
             elif freq.lower() == 'daily':
                 """
@@ -112,7 +112,7 @@ class APIclient():
                     url = self.records_url + '?q=created:' + current_date_str
                     day_deposits_response = requests.get(url, headers=self.headers).json()
                     no_deposits = day_deposits_response['hits']['total']
-                    return {'time': current_date_str, 'stat': no_deposits}
+                    return {'title': current_date_str, 'stat': no_deposits}
         
         # return time_dict
         
@@ -1144,6 +1144,7 @@ class APIclient():
         
     # determine the top 100 deposits by no. of views, and determine stats of those deposits
     def top_views(self, num):
+        """
         self.get_records('current')
         views = self.num_views('all', 'current')
         keys = list(views.keys())
@@ -1154,12 +1155,24 @@ class APIclient():
         for id in sorted_dict:
             sorted_dict[id] = self.deposits[id]
         top_100_views_dict = dict(itertools.islice(sorted_dict.items(), num))
-        return top_100_views_dict
-    
+        """
+        url = self.records_url + '?sort=mostviewed&size=' + str(num)
+        top_views_response = requests.get(url, headers=self.headers).json()
+        top_views_dict = OrderedDict()
+        for item in top_views_response['hits']['hits']:
+            id = item['id']
+            no_views = top_views_response[id]['stats']['this_version']['views']
+            no_unique_views = top_views_response[id]['stats']['this_version']['unique_views']
+            no_downloads = top_views_response[id]['stats']['this_version']['downloads']
+            no_unique_downloads = top_views_response[id]['stats']['this_version']['unique_downloads']
+            top_views_dict[id] = [no_views, no_unique_views, no_downloads, no_unique_downloads]
+            top_views_dict[id] = item
+
+        return top_views_dict
     
     # determine the top 100 deposits by no. of downloads, and determine stats of those deposits
     def top_downloads(self, num):
-        self.get_records('current')
+        """
         downloads = self.num_downloads('all', 'current')
         keys = list(downloads.keys())
         values = list(downloads.values())
@@ -1169,4 +1182,17 @@ class APIclient():
         for id in sorted_dict:
             sorted_dict[id] = self.deposits[id]
         top_100_downloads_dict = dict(itertools.islice(sorted_dict.items(), num))
-        return top_100_downloads_dict
+        """
+        url = self.records_url + '?sort=mostdownloaded&size=' + str(num)
+        top_downloads_response = requests.get(url, headers=self.headers).json()
+        top_downloads_dict = OrderedDict()
+        for item in top_downloads_response['hits']['hits']:
+            id = item['id']
+            no_views = top_downloads_response[id]['stats']['this_version']['views']
+            no_unique_views = top_downloads_response[id]['stats']['this_version']['unique_views']
+            no_downloads = top_downloads_response[id]['stats']['this_version']['downloads']
+            no_unique_downloads = top_downloads_response[id]['stats']['this_version']['unique_downloads']
+            top_downloads_dict[id] = [no_views, no_unique_views, no_downloads, no_unique_downloads]
+            top_downloads_dict[id] = item
+
+        return top_downloads_dict
