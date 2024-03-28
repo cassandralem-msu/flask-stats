@@ -98,5 +98,5 @@ def stats():
         section['table_entries'] = table_entries
 
         sections_part_2.append(section)
-
+        
     return render_template('base.html', sections_part_1=sections_part_1, sections_part_2=sections_part_2)

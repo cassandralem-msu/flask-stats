@@ -51,41 +51,29 @@ class APIclient():
 
         else:
             if freq.lower() == 'monthly':
+                """
                 time_dict = {}
                 for key in self.deposits:
                     remove_time = self.deposits[key]['created'].split('T')
                     y_m_d = remove_time[0].split('-')
                     month_year = y_m_d[1] + '-' + y_m_d[0] 
                     time_dict[month_year] = time_dict.get(month_year, 0) + 1
-                
+                """
+
                 if latest:
                     current_date = datetime.now()
                     current_month = str(current_date.month)
                     current_year = str(current_date.year)
                     current_month_str = current_month if int(current_date.month) > 9 else '0' + current_month \
                                 + '-' + current_year
-                    if current_month_str in time_dict:
-                        return {'time': current_month_str, 'stat': time_dict[current_month_str]}
-                    return {'time': current_month_str, 'stat': 0}
+                    url = self.records_url + '?q=created:' + current_month_str
+                    month_deposits_response = requests.get(url, headers=self.headers).json()
+                    no_deposits = month_deposits_response['hits']['total']
+                    return {'time': current_month_str, 'stat': no_deposits}
             
-            elif freq.lower() == 'daily':
-                time_dict = {}
-                for key in self.deposits:
-                    remove_time = self.deposits[key]['created'].split('T')
-                    y_m_d = remove_time[0]
-                    time_dict[y_m_d] = time_dict.get(y_m_d, 0) + 1
-                
-                if latest:
-                    current_date = datetime.now()
-                    current_date_str = str(current_date.year) + '-' \
-                                        + (str(current_date.month) if int(current_date.month) > 9 else '0' + str(current_date.month)) \
-                                        + '-' + (str(current_date.day) if int(current_date.day) > 9 else '0' + str(current_date.day))
-                    if current_date_str in time_dict:
-                        return {'time': current_date_str, 'stat': time_dict[current_date_str]}
-                    return {'time': current_date_str, 'stat': 0}
-                
             # weekly: isocalendar() from datetime.time
             elif freq.lower() == 'weekly':
+                """
                 time_dict = {}
                 for key in self.deposits:
                     remove_time = self.deposits[key]['created'].split('T')
@@ -95,17 +83,41 @@ class APIclient():
                     week = date_tuple.isocalendar()[1]
                     week_str = 'Week ' + str(week) + ', ' + str(year)
                     time_dict[week_str] = time_dict.get(week_str, 0) + 1
+                """
                 
                 if latest:
                     current_date = datetime.now()
-                    current_week = current_date.isocalendar()[1]
+                    # current_week = current_date.isocalendar()[1]
                     current_year = str(current_date.year)
-                    current_week_str = 'Week ' + str(current_week) + ', ' + current_year
-                    if current_week_str in time_dict:
-                        return {'time': current_week_str, 'stat': time_dict[current_week_str]}
-                    return {'time': current_week_str, 'stat': 0}
+                    # current_week_str = 'Week ' + str(current_week) + ', ' + current_year
+                    start_week = current_date - dt.timedelta(days=current_date.weekday())
+                    end_week = start_week + dt.timedelta(days=6)
+                    url = f"{self.records_url}?q=created:[{start_week} TO {end_week}]"
+                    week_deposits_response = requests.get(url, headers=self.headers).json()
+                    no_deposits = week_deposits_response['hits']['total']
+                    current_week_str = 'Week of ' + start_week + ' - ' + end_week
+                    return {'time': current_week_str, 'stat': no_deposits}
+            
+            elif freq.lower() == 'daily':
+                """
+                time_dict = {}
+                for key in self.deposits:
+                    remove_time = self.deposits[key]['created'].split('T')
+                    y_m_d = remove_time[0]
+                    time_dict[y_m_d] = time_dict.get(y_m_d, 0) + 1
+                """
+                    
+                if latest:
+                    current_date = datetime.now()
+                    current_date_str = str(current_date.year) + '-' \
+                                        + (str(current_date.month) if int(current_date.month) > 9 else '0' + str(current_date.month)) \
+                                        + '-' + (str(current_date.day) if int(current_date.day) > 9 else '0' + str(current_date.day))
+                    url = self.records_url + '?q=created:' + current_date_str
+                    day_deposits_response = requests.get(url, headers=self.headers).json()
+                    no_deposits = day_deposits_response['hits']['total']
+                    return {'time': current_date_str, 'stat': no_deposits}
         
-        return time_dict
+        # return time_dict
         
     
     # function that returns the total num of views of a deposit
