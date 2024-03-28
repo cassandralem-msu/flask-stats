@@ -59,7 +59,6 @@ class APIclient():
                     month_year = y_m_d[1] + '-' + y_m_d[0] 
                     time_dict[month_year] = time_dict.get(month_year, 0) + 1
                 """
-
                 if latest:
                     current_date = datetime.now()
                     current_month = str(current_date.month)
@@ -84,7 +83,6 @@ class APIclient():
                     week_str = 'Week ' + str(week) + ', ' + str(year)
                     time_dict[week_str] = time_dict.get(week_str, 0) + 1
                 """
-                
                 if latest:
                     current_date = datetime.now()
                     # current_week = current_date.isocalendar()[1]
@@ -106,7 +104,6 @@ class APIclient():
                     y_m_d = remove_time[0]
                     time_dict[y_m_d] = time_dict.get(y_m_d, 0) + 1
                 """
-                    
                 if latest:
                     current_date = datetime.now()
                     current_date_str = str(current_date.year) + '-' \
