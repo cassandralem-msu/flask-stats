@@ -65,7 +65,7 @@ def stats():
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
                 """
-                dict_response = client.num_deposits(freq)
+                dict_response = client.num_deposits(freq=freq, latest=True)
             """
             else:
                 get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "all", freq, "--latest", "--json-output"], 
