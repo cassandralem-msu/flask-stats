@@ -12,10 +12,11 @@ bp = Blueprint('stats', __name__, url_prefix='/')
 
 @bp.route('/')
 def stats():
-    client = APIclient()
+    token = os.environ['CLI_TOKEN']
+    client = APIclient(token)
     sections_part_1 = []
     sections_part_2 = []
-    stat_types_1 = ['total_deposits', 'avg_views', 'avg_downloads']
+    stat_types_1 = ['total_deposits']
     stat_types_2 = ['top_views', 'top_downloads']
     freqs = ['monthly', 'weekly', 'daily']
     path = Path(__file__).resolve().parent
@@ -27,24 +28,30 @@ def stats():
         table_entries = []
         # send command line request to get total no. of deposits
         if stat_type == 'total_deposits':
-            """ get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "--json-output"], 
+            """ 
+            get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "--json-output"], 
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
-                                            universal_newlines=True,) """
-            total_deposits = client.num_deposits()
+                                            universal_newlines=True,) 
+            """
+            dict_response = client.num_deposits()
+        
+        """
         else:
             get_stat = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "all", "--json-output"], 
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
                                             universal_newlines=True,)
-        stdout_stat, stderr_stat = get_stat.communicate()
+        """
+            
+        # stdout_stat, stderr_stat = get_stat.communicate()
 
         # print(get_stat.returncode)
 
-        pprint(stdout_stat)
-        pprint(stderr_stat)
+        # pprint(stdout_stat)
+        # pprint(stderr_stat)
 
-        dict_response = json.loads(stdout_stat)
+        # dict_response = json.loads(stdout_stat)
 
         section['main_heading'] = dict_response['title']
         section['main_stat'] = dict_response['stat']
@@ -52,19 +59,24 @@ def stats():
 
         for freq in freqs:
             if stat_type == 'total_deposits':
+                """
                 get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, freq, "--latest", "--json-output"], 
                                                             stdout=subprocess.PIPE,
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
+                """
+                dict_response = client.num_deposits(freq)
+            """
             else:
                 get_no_deposits_time = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, "all", freq, "--latest", "--json-output"], 
                                                             stdout=subprocess.PIPE,
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
             stdout_table, stderr_table = get_no_deposits_time.communicate()
+            """
             # pprint(stdout_table)
             # pprint(stderr_table)
-            dict_response = json.loads(stdout_table)
+            # dict_response = json.loads(stdout_table)
             table_headings.append(dict_response['title'])
             #print(dict_response['title'])
             table_entries.append(dict_response['stat'])
@@ -79,23 +91,27 @@ def stats():
         section = {}
         table_headings = []
         table_entries = []
-        num = '100'
+        num = 100
 
+        """
         get_top_deposits = subprocess.Popen(["pipenv", "run", "python3", stats_CLI_path, stat_type, num], 
                                                             stdout=subprocess.PIPE,
                                                             stderr=subprocess.PIPE,
                                                             universal_newlines=True,)
         stdout_top, stderr_top = get_top_deposits.communicate()
         table_entries = json.loads(stdout_top)
+        """
 
         if stat_type == "top_views":
+            response = client.top_views(num)
             section['main_heading'] = "Statistics for the top 100 deposits (by # of views)"
         else:
+            response = client.top_downloads(num)
             section['main_heading'] = "Statistics for the top 100 deposits (by # of downloads)"
         
         section['table_headings'] = ["No. of views (current version)", "No. of unique views (current version)", "No. of downloads (current version)", 
                                      "No. of unique downloads (current version)"]
-        section['table_entries'] = table_entries
+        section['table_entries'] = response
 
         sections_part_2.append(section)
         
