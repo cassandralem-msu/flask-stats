@@ -41,13 +41,14 @@ class APIclient():
             
 
     # function that returns the number of deposits, either over time or total
-    def num_deposits(self, freq=None, latest=None):
+    def num_deposits(self, freq=None, latest=False):
         if self.records == None:
             self.get_records('current')
 
         # might need to do time sorting for dictionaries returned?
         if freq == None:
-            return self.records['hits']['total']
+            no_deposits = self.records['hits']['total']
+            return {'title': 'Total number of deposits currently', 'stat': no_deposits}
 
         else:
             if freq.lower() == 'monthly':
@@ -93,7 +94,7 @@ class APIclient():
                     url = f"{self.records_url}?q=created:[{start_week} TO {end_week}]"
                     week_deposits_response = requests.get(url, headers=self.headers).json()
                     no_deposits = week_deposits_response['hits']['total']
-                    current_week_str = 'Week of ' + start_week + ' - ' + end_week
+                    current_week_str = 'Week of ' + start_week.strftime('%Y-%m-%d') + ' - ' + end_week.strftime('%Y-%m-%d')
                     return {'title': current_week_str, 'stat': no_deposits}
             
             elif freq.lower() == 'daily':
@@ -1159,14 +1160,13 @@ class APIclient():
         url = self.records_url + '?sort=mostviewed&size=' + str(num)
         top_views_response = requests.get(url, headers=self.headers).json()
         top_views_dict = OrderedDict()
-        for item in top_views_response['hits']['hits']:
-            id = item['id']
-            no_views = top_views_response[id]['stats']['this_version']['views']
-            no_unique_views = top_views_response[id]['stats']['this_version']['unique_views']
-            no_downloads = top_views_response[id]['stats']['this_version']['downloads']
-            no_unique_downloads = top_views_response[id]['stats']['this_version']['unique_downloads']
+        for deposit in top_views_response['hits']['hits']:
+            id = deposit['id']
+            no_views = deposit['stats']['this_version']['views']
+            no_unique_views = deposit['stats']['this_version']['unique_views']
+            no_downloads = deposit['stats']['this_version']['downloads']
+            no_unique_downloads = deposit['stats']['this_version']['unique_downloads']
             top_views_dict[id] = [no_views, no_unique_views, no_downloads, no_unique_downloads]
-            top_views_dict[id] = item
 
         return top_views_dict
     
@@ -1186,13 +1186,12 @@ class APIclient():
         url = self.records_url + '?sort=mostdownloaded&size=' + str(num)
         top_downloads_response = requests.get(url, headers=self.headers).json()
         top_downloads_dict = OrderedDict()
-        for item in top_downloads_response['hits']['hits']:
-            id = item['id']
-            no_views = top_downloads_response[id]['stats']['this_version']['views']
-            no_unique_views = top_downloads_response[id]['stats']['this_version']['unique_views']
-            no_downloads = top_downloads_response[id]['stats']['this_version']['downloads']
-            no_unique_downloads = top_downloads_response[id]['stats']['this_version']['unique_downloads']
+        for deposit in top_downloads_response['hits']['hits']:
+            id = deposit['id']
+            no_views = deposit['stats']['this_version']['views']
+            no_unique_views = deposit['stats']['this_version']['unique_views']
+            no_downloads = deposit['stats']['this_version']['downloads']
+            no_unique_downloads = deposit['stats']['this_version']['unique_downloads']
             top_downloads_dict[id] = [no_views, no_unique_views, no_downloads, no_unique_downloads]
-            top_downloads_dict[id] = item
 
         return top_downloads_dict
