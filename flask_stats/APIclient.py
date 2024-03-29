@@ -3,6 +3,7 @@ import numpy as np
 import json
 import calendar
 import itertools
+import urllib.parse
 import datetime as dt
 from datetime import datetime
 from collections import OrderedDict
@@ -62,11 +63,14 @@ class APIclient():
                 """
                 if latest:
                     current_date = datetime.now()
-                    current_month = str(current_date.month)
+                    current_month = str(current_date.month) if int(current_date.month) > 9 else '0' + str(current_date.month)
                     current_year = str(current_date.year)
-                    current_month_str = current_month if int(current_date.month) > 9 else '0' + current_month \
-                                + '-' + current_year
-                    url = self.records_url + '?q=created:' + current_month_str
+                    current_month_str = 'Month of ' + current_month + '-' + current_year
+                    start_mo = current_year + '-' + current_month + '-01'
+                    num_days = calendar.monthrange(int(current_year), int(current_month))[1]
+                    end_mo = current_year + '-' + current_month + '-' + str(num_days)
+                    encoded_query = urllib.parse.quote(f"[{start_mo} TO {end_mo}]")
+                    url = f"{self.records_url}?q=created:{encoded_query}"
                     month_deposits_response = requests.get(url, headers=self.headers).json()
                     no_deposits = month_deposits_response['hits']['total']
                     return {'title': current_month_str, 'stat': no_deposits}
@@ -91,10 +95,13 @@ class APIclient():
                     # current_week_str = 'Week ' + str(current_week) + ', ' + current_year
                     start_week = current_date - dt.timedelta(days=current_date.weekday())
                     end_week = start_week + dt.timedelta(days=6)
-                    url = f"{self.records_url}?q=created:[{start_week} TO {end_week}]"
+                    start_week = start_week.strftime('%Y-%m-%d')
+                    end_week = end_week.strftime('%Y-%m-%d')
+                    encoded_query = urllib.parse.quote(f"[{start_week} TO {end_week}]")
+                    url = f"{self.records_url}?q=created:{encoded_query}"
                     week_deposits_response = requests.get(url, headers=self.headers).json()
                     no_deposits = week_deposits_response['hits']['total']
-                    current_week_str = 'Week of ' + start_week.strftime('%Y-%m-%d') + ' - ' + end_week.strftime('%Y-%m-%d')
+                    current_week_str = 'Week of ' + start_week + ' - ' + end_week
                     return {'title': current_week_str, 'stat': no_deposits}
             
             elif freq.lower() == 'daily':
